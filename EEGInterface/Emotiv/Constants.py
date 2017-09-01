@@ -1,0 +1,39 @@
+import os
+"""
+This file stores all the constants needed for Emotiv interface
+"""
+# code for channels
+ED_COUNTER = 0
+ED_INTERPOLATED=1
+ED_RAW_CQ=2
+ED_AF3=3
+ED_F7=4
+ED_F3=5
+ED_FC5=6
+ED_T7=7
+ED_P7=8
+ED_O1=9
+ED_O2=10
+ED_P8=11
+ED_T8=12
+ED_FC6=13
+ED_F4=14
+ED_F8=15
+ED_AF4=16
+ED_GYROX=17
+ED_GYROY=18
+ED_TIMESTAMP=19
+ED_ES_TIMESTAMP=20
+ED_FUNC_ID=21
+ED_FUNC_VALUE=22
+ED_MARKER=23
+ED_SYNC_SIGNAL=24
+# channel list
+TARGET_CHANNEL_LIST = [ED_COUNTER,ED_AF3, ED_F7, ED_F3, ED_FC5, ED_T7,ED_P7, ED_O1, ED_O2, ED_P8, ED_T8,ED_FC6, ED_F4, ED_F8, ED_AF4, ED_GYROX, ED_GYROY, ED_TIMESTAMP, ED_FUNC_ID, ED_FUNC_VALUE, ED_MARKER, ED_SYNC_SIGNAL]
+# header
+HEADER = ['COUNTER','AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4','GYROX', 'GYROY', 'TIME_INDEX','FUNC_ID', 'FUNC_VALUE', 'MARKER', 'SYNC_SIGNAL', 'TIMESTAMP']
+# library path
+LIB_PATH = 'C:\Python27\Lib\site-packages\CCDLUtil\EEGInterface\Emotiv\\'
+
+
+
