@@ -1,4 +1,4 @@
-import CCDLUtil.EEGInterface.EEGInterfaceParent as EEGParent
+import CCDLUtil.EEGInterface.EEGInterface as EEGParent
 import Constants
 import ctypes as ct
 import sys

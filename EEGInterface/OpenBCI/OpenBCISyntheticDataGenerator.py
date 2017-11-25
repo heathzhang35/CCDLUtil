@@ -2,10 +2,10 @@ import random
 import time
 
 import OpenBCIHardwareInterface as HardwareInterface
-import OpenBCIStreamer
+import OpenBCIInterface
 
 
-class OpenBCISyntheticData(OpenBCIStreamer.OpenBCIStreamer):
+class OpenBCISyntheticData(OpenBCIInterface.OpenBCIStreamer):
     """
     Inherits from OpenBCIStreamer. This is to simulate the same interface we would receive from OpenBCI
     """

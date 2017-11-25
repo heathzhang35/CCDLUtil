@@ -1,13 +1,13 @@
 import time
 
 import OpenBCIHardwareInterface as HardwareInterface
-import OpenBCIStreamer
+import OpenBCIInterface
 import ParentInterface.EpochIndex as EpochIndex
 import ParentInterface.OnlinePredScreen as OnlinePredScreen
 from ParentInterface import OnlinePredBufferMessages
 
 
-class OpenBCIFilePlayback(OpenBCIStreamer.OpenBCIStreamer):
+class OpenBCIFilePlayback(OpenBCIInterface.OpenBCIStreamer):
     """
     Inherits from OpenBCIStreamer. This is to simulate the same interface we would receive from OpenBCI
     """

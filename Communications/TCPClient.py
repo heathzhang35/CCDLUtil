@@ -30,8 +30,8 @@ class TCPClient(object):
         self.send_message_queue = Queue.Queue()
         self.receive_message_queue = Queue.Queue()
 
-        self.__start_receive_from_queue__()
-        self.__start_send_to_queue__()
+        self._start_receive_from_queue()
+        self._start_send_to_queue()
 
     def send_message(self, message):
         """
@@ -48,8 +48,8 @@ class TCPClient(object):
         """
         return self.receive_message_queue.get()
 
-    @threaded
-    def __start_receive_from_queue__(self):
+    @threaded(False)
+    def _start_receive_from_queue(self):
         """start receiving messages from server and pass them to the receive_message_queue
         :return: none
         """
@@ -59,8 +59,8 @@ class TCPClient(object):
             if self.verbose: print "Server sends: " + received_message
             self.receive_message_queue.put(received_message)
 
-    @threaded
-    def __start_send_to_queue__(self):
+    @threaded(False)
+    def _start_send_to_queue(self):
         """start sending messages to server and pass them to the send_message_queue. Send 'exit' to close the socket
         :return: none
         """

@@ -29,7 +29,7 @@ class Log(object):
         if header is not None:
             self.f.write(header)
         # create new thread and start logging to file
-        self.__start_log__(verbose=verbose)
+        self._start_log(verbose=verbose)
 
     def info(self, message):
         """
@@ -39,8 +39,8 @@ class Log(object):
         """
         self.log_queue.put(message)
 
-    @threaded
-    def __start_log__(self, verbose=False):
+    @threaded(True)
+    def _start_log(self, verbose=False):
         """
         Starts reading items from the queue.  All items passed to the queue must be a string or it will be converted
         (raising a warning).  If no new line is at the end of the string, one will be added.

@@ -14,9 +14,9 @@ import CCDLUtil.Utility.Constants as CCDLConstants
 import CCDLUtil.Graphics.PyCrosshair as CCDLPyCross
 import CCDLUtil.DataManagement.FileParser as CCDLFP
 import CCDLUtil.Utility.SystemInformation as CCDLSI
-import CCDLUtil.EEGInterface.EEGDataSaver as CCDLEEGDatasaver
+import CCDLUtil.EEGInterface.DataSaver as CCDLEEGDatasaver
 import CCDLUtil.EEGInterface.gUSBAmp.GUSBAmpInterface as CCDLGusb
-import CCDLUtil.EEGInterface.OpenBCI.OpenBCIStreamer as CCDLOpenBCI
+import CCDLUtil.EEGInterface.OpenBCI.OpenBCIInterface as CCDLOpenBCI
 import CCDLUtil.ArduinoInterface.Arduino2LightInterface as CCDLArduino
 import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as CCDLBrainAmp
 

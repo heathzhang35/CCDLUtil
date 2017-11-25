@@ -189,7 +189,7 @@ class PyCrosshair(object):
         """
         pygame.event.clear()
 
-    @threaded
+    @threaded(False)
     def _run_with_queue(self):
         """
         Runs our game by reading off events off the passed queue. Events should be passed in the form:

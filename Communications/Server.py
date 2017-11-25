@@ -11,6 +11,7 @@ public network connection is disabled)
 import socket
 import sys
 import Queue
+import errno
 import Util
 from CCDLUtil.Utility.VerboseInfo import verbose_info
 from CCDLUtil.Utility.Decorators import threaded # for running method in new thread
@@ -18,6 +19,10 @@ from CCDLUtil.Utility.Decorators import threaded # for running method in new thr
 
 class TCPServer(object):
 
+    """
+    Basic server based on TCP for send and receive messages.
+    """
+    
     def __init__(self, port, buf=1024, verbose=True):
         """
         Initialize a TCP Server object and the client dictionary
@@ -57,28 +62,42 @@ class TCPServer(object):
     def is_connected_with(self, client):
         return client in self.clients
 
-    @threaded(False)
+    @threaded
     def _start_receive_from_queue(self, client):
         while True:
             conn = self.clients[client][0]
-            message = Util.recv_msg(conn)
+            try: 
+                message = Util.recv_msg(conn)
+            except socket.error, e:
+                # client disconnected
+                if e.errno == errno.ECONNRESET:
+                    verbose_info(self.verbose, "client from " + str(client) + " is disconnected!")
+                    del self.clients[client]
+                else:
+                    raise "Unknown error cause"
             # receive queue
             self.clients[client][1].put(message)
-            if self.verbose:
-                print "received message: " + message
+            verbose_info(self.verbose, "received message: " + message)
             if message == "exit":
                 self.socket.close()
 
-    @threaded(False)
+    @threaded
     def _start_send_to_queue(self, client):
         while True:
             conn = self.clients[client][0]
-            message_to_send = self.clients[client][2].get()
-            if self.verbose:
-                print "Sending... ", message_to_send
-            Util.send_msg(conn, message_to_send)
+            message_to_send = self.clients[client][2].get
+            verbose_info(self.verbose, "Sending... " + message_to_send) 
+            try:
+                Util.send_msg(conn, message_to_send)
+            except socket.error, e:
+                # client disconnected
+                if e.errno == errno.ECONNRESET:
+                    verbose_info(self.verbose, "client from " + str(client) + " is disconnected!")
+                    del self.clients[client]
+                else:
+                    raise "Unknown error cause"
 
-    @threaded(False)
+    @threaded
     def _accept_clients(self):
         """
         Start listening and accepting new clients.

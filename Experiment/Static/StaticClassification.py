@@ -7,10 +7,10 @@ import CCDLUtil.Graphics.PyCrosshair as CCDLPyCross
 import CCDLUtil.SignalProcessing.Fourier as CCDLFourier
 import CCDLUtil.DataManagement.DataParser as CCDLDataParser
 import CCDLUtil.DataManagement.FileParser as CCDLFileParser
-import CCDLUtil.EEGInterface.EEGDataSaver as CCDLEEGDatasaver
+import CCDLUtil.EEGInterface.DataSaver as CCDLEEGDatasaver
 import CCDLUtil.EEGInterface.gUSBAmp.GUSBAmpInterface as CCDLGusb
 import CCDLUtil.Experiment.Static.Static_ML_Util as CCDL_Static_ML
-import CCDLUtil.EEGInterface.OpenBCI.OpenBCIStreamer as CCDLOpenBCI
+import CCDLUtil.EEGInterface.OpenBCI.OpenBCIInterface as CCDLOpenBCI
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 import CCDLUtil.ArduinoInterface.Arduino2LightInterface as CCDLArduino
 import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as CCDLBrainAmp

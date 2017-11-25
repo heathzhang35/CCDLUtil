@@ -4,10 +4,10 @@ import struct
 import time
 import Queue
 import threading
-import CCDLUtil.EEGInterface.EEGDataSaver
+import CCDLUtil.EEGInterface.DataSaver
 import numpy as np
 import CCDLUtil.EEGInterface.EEG_INDEX
-import CCDLUtil.EEGInterface.EEGInterfaceParent as CCDLEEGParent
+import CCDLUtil.EEGInterface.EEGInterface as CCDLEEGParent
 import CCDLUtil.DataManagement.DataParser as CCDLDataParser
 import pylsl
 

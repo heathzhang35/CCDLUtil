@@ -68,7 +68,7 @@ class Arduino2LightInterface(object):
     def turn_right_off(self):
         self.event_queue.put(self.LIGHT_4_DEACTIVATE_MSG)
 
-    @threaded
+    @threaded(True)
     def __read_from_queue__(self):
         """
         Runs infinitely, taking messages from a queue for what to write to the arduino board.
