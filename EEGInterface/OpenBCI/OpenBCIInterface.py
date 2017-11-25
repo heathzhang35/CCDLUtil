@@ -1,5 +1,3 @@
-import numpy as np
-import scipy
 import CCDLUtil.EEGInterface.OpenBCI.OpenBCIHardwareInterface as BciHwInter
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterface
@@ -44,6 +42,8 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
             raise ValueError("port cannot be None!")
         self.port = port
         self.baud = baud
+        # create board object from hardware interface
+        self.board = BciHwInter.OpenBCIBoard(port=self.port, baud=self.baud, scaled_output=False, log=True)
 
     def callback_fn(self, data_packet):
         """
@@ -112,9 +112,13 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         Starts the open BciHwInter streamer. Called in a new thread
         """
 
-        board = BciHwInter.OpenBCIBoard(port=self.port, baud=self.baud, scaled_output=False, log=True)
         print 'start recording'
-        board.start_streaming(self.callback_fn)
+        self.board.start_streaming(self.callback_fn)
+
+    def stop_recording(self):
+        print 'stop recording'
+        self.board.stop()
+        self.board.disconnect()
 
 
 if __name__ == '__main__':
@@ -122,3 +126,7 @@ if __name__ == '__main__':
     obs = OpenBCIStreamer(live=True, save_data=True, port='/dev/tty.usbserial-DJ00IUMR')
     obs.start_recording()
     obs.start_saving_data(save_data_file_path='testing.csv', header="Sample Header")
+    cue = raw_input("Enter stop to finish recording: ")
+    while cue != 'stop':
+        pass
+    obs.stop_recording()
