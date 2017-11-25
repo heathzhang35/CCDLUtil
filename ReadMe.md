@@ -2,30 +2,38 @@
 
 ## Introduction
 
-This is the newest version branch of CCDLUtil, set up by Nolan Strait (nlstrait@cs) and Linxing Preston Jiang (prestonj@cs).
-This branch contains both the refactored version of code from master branch and the newly added functionality.
+This is the newest version branch of CCDLUtil, set up by [Darby Losey](loseydm@uw.edu), 
+[Preston Jiang](<https://homes.cs.washington.edu/~prestonj/>), and [Nolan Strait](nlstrait@cs.washington.edu). This 
+repository contains many useful Python modules for EEG-related experiments and data analysis. Some of the most popular 
+functions include:
+* Python interface with major EEG hardware devices (BrainAmp, OpenBCI, and Emotiv)
+* EEG epoch manipulations
+* Graphics (cursor control) for SSVEP experiments
+* TCP communication model for creating servers and clients
 
 ## Instructions for use
 
 This is intended as a general library.  If using, please clone into your site-packages folder. Example paths are:
-* Windows: C:\Python27\Lib\site_packages
-* OS X/Linux: ~/.local/lib/python2.7/site-packages
-
-If cloning from gitlab, you may need to rename the folder it clones into (DLUtil -> CCDLUtil) for imports
-to work properly.
+* Windows: `C:\Python27\Lib\site_packages`
+* OS X: `~/Library/Python/2.7/lib/python/site-packages` (Placing it under `/System` might result in permission issues)
+* Linux: `~/.local/lib/python2.7/site-packages` (If you have other setup, you probably know your system well enough to 
+figure it out)
 
 ## Dependencies
-Runs with python 2.7.  Some modules many not require all dependencies. 
-* numpy
-* scikit-learn
-* wxpython
-* pygame
-* scipy
-* ast
-* pyaml
-* json
+This module is built to work with Python 2.7 (We are working hard to adapt the whole module to be working with Python 3 
+without using `__future__`, for the latest update please check out the `python3_updates` branch!). Some modules many not
+require all dependencies. 
 
-## Suggested Data Formats
+* numpy	1.8
+* scipy	1.0.0	
+* matplotlib 2.1.0
+* PyYAML 3.12
+* pyserial 3.4	
+* scikit-learn 0.19.1	
+* serial 0.0.21	
+* setuptools 28.8.0
+* six 1.11.0
+* sklearn 0.0
 
 #### Epoched and unepoched EEG Data
 

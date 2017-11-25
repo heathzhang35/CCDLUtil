@@ -6,3 +6,6 @@
 *.log
 *.exe
 *.com
+
+# IDE-related
+.idea/
