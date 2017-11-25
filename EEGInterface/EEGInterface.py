@@ -55,6 +55,7 @@ class EEGInterfaceParent(object):
                 raise ValueError('Invalid channels_for_live parameter')
         # create data save queue
         self.data_save_queue = Queue.Queue() if save_data else None
+        self.stopped = False
 
     @staticmethod
     def trim_channels_with_channel_index_list(data, channel_index_list):
@@ -72,6 +73,12 @@ class EEGInterfaceParent(object):
         return [data[xx] for xx in channel_index_list]
 
     def start_recording(self):
+        """
+        To be overridden by child
+        """
+        pass
+
+    def stop_recording(self):
         """
         To be overridden by child
         """
@@ -113,7 +120,7 @@ class EEGInterfaceParent(object):
                 f.write(header)
                 f.write('\n')
             f.flush()
-        while True:
+        while not self.stopped:
             # get our components
             try:
                 if timeout is None:
