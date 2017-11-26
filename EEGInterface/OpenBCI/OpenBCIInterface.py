@@ -3,6 +3,7 @@ import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterface
 from CCDLUtil.Utility.Decorators import threaded
 import time
+import serial
 
 
 class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
@@ -65,8 +66,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         except Exception as e:
             # If we throw an error in this portion of the code, exit everything
             print e.message, e
-            # Won't run
-            raise e
+            # continue to run, ignore the incomplete packet
 
         # Put on Out Buffer for live data analysis.
         if self.live:
@@ -113,10 +113,14 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         """
 
         print 'start recording'
-        self.board.start_streaming(self.callback_fn)
+        try:
+            self.board.start_streaming(self.callback_fn)
+        except serial.SerialException:
+            pass
 
     def stop_recording(self):
         print 'stop recording'
+        self.stopped = True
         self.board.stop()
         self.board.disconnect()
 
@@ -126,7 +130,10 @@ if __name__ == '__main__':
     obs = OpenBCIStreamer(live=True, save_data=True, port='/dev/tty.usbserial-DJ00IUMR')
     obs.start_recording()
     obs.start_saving_data(save_data_file_path='testing.csv', header="Sample Header")
-    cue = raw_input("Enter stop to finish recording: ")
+    cue = 'start'
     while cue != 'stop':
-        pass
+        cue = raw_input("Enter stop to finish recording: ")
+
     obs.stop_recording()
+
+
