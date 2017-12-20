@@ -6,6 +6,7 @@ import CCDLUtil.DataManagement.QueueManagement as QueueManagement
 import CCDLUtil.Utility.Constants as Constants
 import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as BrainAmp
 import CCDLUtil.EEGInterface.OpenBCI.OpenBCIInterface as OpenBCI
+from CCDLUtil.SignalProcessing.Filters import butter_bandpass_filter
 from CCDLUtil.Graphics.CursorTask.CursorTask import CursorTask
 from CCDLUtil.ArduinoInterface.Arduino2LightInterface import Arduino2LightInterface as Arduino
 from scipy.stats import linregress
@@ -17,11 +18,11 @@ ROTATE = 'rotate'
 DONT_ROTATE = 'dont_rotate'
 EEG_COLLECT_TIME_SECONDS = 15
 WINDOW_SIZE_SECONDS = 2
-EEG = Constants.EEGSystemNames.BRAIN_AMP
+EEG = Constants.EEGSystemNames.OpenBCI
 # index
 
 
-def initialize_eeg(live_channels, subject_name='Default', openbci_port=5):
+def initialize_eeg(live_channels, subject_name='Default', openbci_port='COM17'):
     """Initialize eeg interface
 
     :param live_channels: the channels to take live data
@@ -34,7 +35,6 @@ def initialize_eeg(live_channels, subject_name='Default', openbci_port=5):
         eeg_system = BrainAmp.BrainAmpStreamer(channels_for_live=live_channels, live=True, save_data=True, subject_name=subject_name)
     elif EEG == Constants.EEGSystemNames.OpenBCI:
         eeg_system = OpenBCI.OpenBCIStreamer(channels_for_live=[0], live=True, save_data=True, subject_name=subject_name, port=openbci_port)
-        eeg_system.start_saving_data(save_data_file_path='test_openbci.csv', header="Sample Header")
     return eeg_system
 
 
@@ -140,13 +140,9 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
         b = np.zeros(shape=(single_trial_duration_samples,))
         packet_index = 0
 
-        m, intercept, IDX = drift_training(out_buffer_queue, IDX)
-
         while packet_index < single_trial_duration_packets:
             # insert the visualizer here
             packet = out_buffer_queue.get()  # Gives us a (10, 1) matrix.
-            IDX += 1
-            packet = packet - IDX * m - intercept
             # get the sample
             samples = np.squeeze(packet)      # Gives us a (10,) array
             sample_index = packet_index * samples_per_packet
@@ -156,6 +152,8 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
             if packet_index != 0 and packet_index % window_size_packets == 0:
                 # print "packet index: ", packet_index, ", do FFT"
                 window = b[packet_index * samples_per_packet - window_size_samples:packet_index * samples_per_packet]
+                # lowcut = low_freq - 1, highcut = high_freq + 1
+                window = butter_bandpass_filter(window, low_freq - 1, high_freq + 1, order=3)
                 # perform FFT
                 freq, density = Fourier.get_fft_all_channels(data=np.expand_dims(np.expand_dims(window, axis=0), axis=2),
                                                              fs=fs, noverlap=fs // 2, nperseg=fs)
@@ -202,6 +200,7 @@ def build_prompt_lst():
 if __name__ == '__main__':
     eeg = initialize_eeg(['Oz'])
     out_buffer_queue = None if eeg is None else eeg.out_buffer_queue
+    print out_buffer_queue
     eeg.start_recording()
     cursor_task = initialize_graphics(width=1920, height=1080)
     # some questions
