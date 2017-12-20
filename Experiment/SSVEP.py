@@ -6,23 +6,23 @@ import CCDLUtil.DataManagement.QueueManagement as QueueManagement
 import CCDLUtil.Utility.Constants as Constants
 import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as BrainAmp
 import CCDLUtil.EEGInterface.OpenBCI.OpenBCIInterface as OpenBCI
-from CCDLUtil.SignalProcessing.Filters import butter_bandpass_filter
 from CCDLUtil.Graphics.CursorTask.CursorTask import CursorTask
 from CCDLUtil.ArduinoInterface.Arduino2LightInterface import Arduino2LightInterface as Arduino
 from scipy.stats import linregress
+from CCDLUtil.SignalProcessing.Filters import butter_bandpass_filter
 
 # some constants for the SSVEP demo
 STEP = 100
 CURSOR_RADIUS = 60
 ROTATE = 'rotate'
 DONT_ROTATE = 'dont_rotate'
-EEG_COLLECT_TIME_SECONDS = 15
+EEG_COLLECT_TIME_SECONDS = 20
 WINDOW_SIZE_SECONDS = 2
 EEG = Constants.EEGSystemNames.OpenBCI
 # index
 
 
-def initialize_eeg(live_channels, subject_name='Default', openbci_port='COM17'):
+def initialize_eeg(live_channels, subject_name='Default', openbci_port=5):
     """Initialize eeg interface
 
     :param live_channels: the channels to take live data
@@ -35,6 +35,7 @@ def initialize_eeg(live_channels, subject_name='Default', openbci_port='COM17'):
         eeg_system = BrainAmp.BrainAmpStreamer(channels_for_live=live_channels, live=True, save_data=True, subject_name=subject_name)
     elif EEG == Constants.EEGSystemNames.OpenBCI:
         eeg_system = OpenBCI.OpenBCIStreamer(channels_for_live=[0], live=True, save_data=True, subject_name=subject_name, port=openbci_port)
+        eeg_system.start_saving_data(save_data_file_path='test_openbci.csv', header="Sample Header")
     return eeg_system
 
 
@@ -45,7 +46,7 @@ def initialize_graphics(width=1920, height=1080):
     :param height: the height (pixels) of the screen
     :return CursorTask object
     """
-    return CursorTask(screen_size_width=width, screen_size_height=height, window_x_pos=1920)
+    return CursorTask(screen_size_width=width, screen_size_height=height, window_x_pos=0)
 
 
 def drift_training(out_buffer_queue, IDX, N=5000):
@@ -152,19 +153,18 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
             if packet_index != 0 and packet_index % window_size_packets == 0:
                 # print "packet index: ", packet_index, ", do FFT"
                 window = b[packet_index * samples_per_packet - window_size_samples:packet_index * samples_per_packet]
-                # lowcut = low_freq - 1, highcut = high_freq + 1
-                window = butter_bandpass_filter(window, low_freq - 1, high_freq + 1, order=3)
+                # filter
+                window = butter_bandpass_filter(window, 0.5, 40, 250, order=2)
                 # perform FFT
                 freq, density = Fourier.get_fft_all_channels(data=np.expand_dims(np.expand_dims(window, axis=0), axis=2),
                                                              fs=fs, noverlap=fs // 2, nperseg=fs)
+
                 # compare densities of 17Hz and 15Hz frequencies
                 #print density.shape
                 if density[0][high_freq][0] <= density[0][low_freq][0]:
-                    print "right"
                     cursor_x += STEP
                     cursor_task.move_cursor_delta_x(STEP)
                 else:
-                    print "left"
                     cursor_x -= STEP
                     cursor_task.move_cursor_delta_x(-STEP)
                 # if we reach left boundary
@@ -200,16 +200,16 @@ def build_prompt_lst():
 if __name__ == '__main__':
     eeg = initialize_eeg(['Oz'])
     out_buffer_queue = None if eeg is None else eeg.out_buffer_queue
-    print out_buffer_queue
     eeg.start_recording()
-    cursor_task = initialize_graphics(width=1920, height=1080)
+    cursor_task = initialize_graphics(width=1680, height=1050)
     # some questions
     prompt_lst = build_prompt_lst()
     # create arduino
-    ard = Arduino(com_port=15)
+    ard = Arduino(com_port=4)
     # start
     IDX = 0
     for prompt in prompt_lst:
         ard.turn_both_on()
-        trial_logic(eeg, out_buffer_queue, cursor_task, 500, 17, 15, prompt, cursor_task.screen_width, IDX)
+        trial_logic(eeg, out_buffer_queue, cursor_task, 250, 17, 15, prompt, cursor_task.screen_width, IDX)
         ard.turn_both_off()
+        time.sleep(3)
