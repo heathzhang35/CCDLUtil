@@ -49,24 +49,7 @@ def initialize_graphics(width=1920, height=1080):
     return CursorTask(screen_size_width=width, screen_size_height=height, window_x_pos=0)
 
 
-def drift_training(out_buffer_queue, IDX, N=5000):
-    # training data
-    train_data = np.arange(N, dtype=float)
-    #
-    print "Start drifting training"
-    while IDX < N:
-        data = out_buffer_queue.get()
-        train_data[IDX] = data[0]
-        IDX += 1
-        print IDX
-
-    #print len(window), window.shape
-    lmod = linregress(np.arange(IDX), train_data)
-    print "Finish drifting training"
-    return lmod[0], lmod[1], IDX
-
-
-def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_freq, prompt, window_width, IDX,
+def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_freq, prompt, window_width,
                 sleep_time_if_not_ran=2):
     """Run a full trial of SSVEP experiment.
 
@@ -207,9 +190,8 @@ if __name__ == '__main__':
     # create arduino
     ard = Arduino(com_port=4)
     # start
-    IDX = 0
     for prompt in prompt_lst:
         ard.turn_both_on()
-        trial_logic(eeg, out_buffer_queue, cursor_task, 250, 17, 15, prompt, cursor_task.screen_width, IDX)
+        trial_logic(eeg, out_buffer_queue, cursor_task, 250, 17, 15, prompt, cursor_task.screen_width)
         ard.turn_both_off()
-        time.sleep(3)
+        time.sleep(5)
