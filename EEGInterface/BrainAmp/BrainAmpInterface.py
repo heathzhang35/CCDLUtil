@@ -24,12 +24,10 @@ import socket
 import struct
 import time
 import Queue
-import CCDLUtil.EEGInterface.DataSaver
 import numpy as np
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterface
 from CCDLUtil.Utility.Decorators import threaded
-from CCDLUtil.EEGInterface.DataSaver import start_saving_data
 import csv
 
 
