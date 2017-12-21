@@ -8,7 +8,6 @@ import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as BrainAmp
 import CCDLUtil.EEGInterface.OpenBCI.OpenBCIInterface as OpenBCI
 from CCDLUtil.Graphics.CursorTask.CursorTask import CursorTask
 from CCDLUtil.ArduinoInterface.Arduino2LightInterface import Arduino2LightInterface as Arduino
-from scipy.stats import linregress
 from CCDLUtil.SignalProcessing.Filters import butter_bandpass_filter
 
 # some constants for the SSVEP demo
@@ -19,7 +18,6 @@ DONT_ROTATE = 'dont_rotate'
 EEG_COLLECT_TIME_SECONDS = 20
 WINDOW_SIZE_SECONDS = 2
 EEG = Constants.EEGSystemNames.OpenBCI
-# index
 
 
 def initialize_eeg(live_channels, subject_name='Default', openbci_port=5):
