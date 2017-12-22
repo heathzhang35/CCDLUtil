@@ -2,6 +2,7 @@
 For filters related to EEG data processing.
 """
 
+import numpy as np
 import scipy.signal as scisig
 
 def butter_bandpass(low, high, fs, order=5):
@@ -28,4 +29,5 @@ def butter_bandpass_filter(data, low, high, fs, order=5):
     :return: filtered data (and modifies original data).
     """
     b, a = butter_bandpass(low, high, fs, order=order)
+    data = data - np.mean(data)
     return scisig.lfilter(b, a, data)
