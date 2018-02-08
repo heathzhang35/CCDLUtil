@@ -7,7 +7,7 @@ The assumption is that this is run with the code in the SSVEP_2_LED/SSVEP_2_LED.
 loaded on the arduino uno board.
 
 """
-import Queue
+import queue 
 import serial
 import time
 from CCDLUtil.Utility.Decorators import threaded
@@ -39,7 +39,7 @@ class Arduino2LightInterface(object):
         :param read_from_queue: True to start a new thread to control lights from queue
         """
 
-        self.event_queue = Queue.Queue()
+        self.event_queue = queue.Queue()
         if type(com_port) is int:
             com_port = 'COM%d' % com_port
         self.ser = serial.Serial(com_port, 9600)
@@ -113,8 +113,8 @@ class Arduino2LightInterface(object):
 
         ret_msg = send_msg(to_send=msg, delay1=pre_delay, delay2=post_delay)
         if run_post_check and ret_msg != msg:
-            print msg, " - Arduino message not delivered with delays ", pre_delay, post_delay,
-            print "Retrying..."
+            print(msg, " - Arduino message not delivered with delays ", pre_delay, post_delay)
+            print("Retrying...")
             ret_msg = send_msg(to_send=msg, delay1=2, delay2=2)
             if ret_msg == msg:
                 print "Arduino Message delivered"
