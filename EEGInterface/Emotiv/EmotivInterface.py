@@ -4,15 +4,17 @@ import ctypes as ct
 import sys
 import time
 import numpy as np
-
+from threading import Thread
+from CCDLUtil.Utility.Decorators import threaded
 
 class EmotivStreamer(EEGParent.EEGInterfaceParent):
 
-    def __init__(self, out_buffer_queue, eeg_file_path, lib_path, channels_for_live='All', put_data_on_out_queue_flag=False, data_save_queue=None, subject_name=None, subject_tracking_number=None,
+    def __init__(self,eeg_file_path, lib_path, channels_for_live='All', subject_name=None, subject_tracking_number=None,
                  experiment_number=None):
         # call parent constructor
-        super(EmotivStreamer, self).__init__(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, put_data_on_out_queue_flag=put_data_on_out_queue_flag,
-                                              subject_name=subject_name, subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
+        super(EmotivStreamer, self).__init__(channels_for_live=channels_for_live, subject_name=subject_name,
+                                             subject_tracking_number=subject_tracking_number,
+                                             experiment_number=experiment_number)
         sys.path.append(Constants.LIB_PATH)
         # set EDK library path
         self.lib_path = lib_path
@@ -27,7 +29,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         """
         return self.libEDK.EE_EmoEngineEventCreate(), self.libEDK.EE_EmoStateCreate(), ct.c_uint(0), ct.c_uint(0), ct.c_uint(0), ct.c_uint(1726), ct.c_float(1), ct.c_int(0)
 
-
+    @threaded(False)
     def start_recording(self):
         """
         Start recording brain signal from Emotiv headset
@@ -82,18 +84,24 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
                     #self.libEDK.EE_DataGet(h_data, 3,byref(arr), nSam)
                     data = np.array('d') # zeros(n_samples_taken[0],double)
                     for sampleIdx in range(n_samples_taken[0]):
+                        # channel 14 + loc data 6 + timestamp 1 = 23
+                        data = np.zeros(23)
                         for i in range(22):
                             self.libEDK.EE_DataGet(h_data, Constants.TARGET_CHANNEL_LIST[i], ct.byref(arr), n_sam)
                             print >>f,arr[sampleIdx],",",
+                            data[i] = arr[sampleIdx]
                         # write our own time stamp
-                        print >>f, time.time(),
+                        t = time.time()
+                        data[-1] = t
+                        print >>f, t,
+                        # put data onto out buffer queue
+                        self.out_buffer_queue.put(data)
                         # switch line
                         print >>f,'\n'
             time.sleep(0.2)
         # not sure the use of this in the original program...
-        libEDK.EE_DataFree(h_data)
+        self.libEDK.EE_DataFree(h_data)
         self.stop_connection(e_event=e_event, e_state=e_state)
-
 
     def stop_connection(self, e_event, e_state):
         """
@@ -105,5 +113,16 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         self.libEDK.EE_EmoStateFree(e_state)
         self.libEDK.EE_EmoEngineEventFree(e_event)
 
+### dummy code to get data
+@threaded(False)
+def get_data(emotiv):
+    while True:
+        print emotiv.out_buffer_queue.get().shape
+
+
+if __name__ == '__main__':
+    emotiv = EmotivStreamer("test.csv", ".\edk.dll")
+    emotiv.start_recording()
+    get_data(emotiv)
 
 
