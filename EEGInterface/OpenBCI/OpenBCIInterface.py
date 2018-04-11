@@ -67,6 +67,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
             # If we throw an error in this portion of the code, exit everything
             print e.message, e
             # continue to run, ignore the incomplete packet
+            return
 
         # Put on Out Buffer for live data analysis.
         if self.live:
@@ -127,9 +128,9 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 if __name__ == '__main__':
 
-    obs = OpenBCIStreamer(live=True, save_data=True, port='/dev/tty.usbserial-DJ00IUMR')
+    obs = OpenBCIStreamer(live=True, save_data=True, port='COM6')
     obs.start_recording()
-    obs.start_saving_data(save_data_file_path='testing.csv', header="Sample Header")
+    obs.start_saving_data(save_data_file_path='TestDataLoss/testing_3.csv', header="Sample Header")
     cue = 'start'
     while cue != 'stop':
         cue = raw_input("Enter stop to finish recording: ")
