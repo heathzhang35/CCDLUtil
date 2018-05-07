@@ -9,8 +9,8 @@ from CCDLUtil.Utility.Decorators import threaded
 
 class EmotivStreamer(EEGParent.EEGInterfaceParent):
 
-    def __init__(self,eeg_file_path, lib_path, channels_for_live='All', subject_name=None, subject_tracking_number=None,
-                 experiment_number=None):
+    def __init__(self,eeg_file_path, lib_path, channels_for_live='All', live=True, save_data=True, 
+                 subject_name=None, subject_tracking_number=None, experiment_number=None):
         # call parent constructor
         super(EmotivStreamer, self).__init__(channels_for_live=channels_for_live, subject_name=subject_name,
                                              subject_tracking_number=subject_tracking_number,
@@ -97,7 +97,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
                         # put data onto out buffer queue
                         self.out_buffer_queue.put(data)
                         # switch line
-                        print >>f,'\n'
+                        print >>f, '\n',
             time.sleep(0.2)
         # not sure the use of this in the original program...
         self.libEDK.EE_DataFree(h_data)
@@ -117,7 +117,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
 @threaded(False)
 def get_data(emotiv):
     while True:
-        print emotiv.out_buffer_queue.get().shape
+        print emotiv.out_buffer_queue.get()
 
 
 if __name__ == '__main__':
