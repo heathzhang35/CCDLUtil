@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/lpjiang97/CCDLUtil.svg?token=mfNtTeyrZWrKtxdswJLn&branch=master)](https://travis-ci.com/lpjiang97/CCDLUtil)
+
 # CCDLUtil
 
 ## Introduction
