@@ -4,8 +4,7 @@
 
 ## Introduction
 
-This is the newest version branch of CCDLUtil, set up by [Darby Losey](loseydm@uw.edu), 
-[Preston Jiang](<https://homes.cs.washington.edu/~prestonj/>), and [Nolan Strait](nlstrait@cs.washington.edu). This 
+This is the newest version branch of CCDLUtil, set up by [Preston Jiang](<https://homes.cs.washington.edu/~prestonj/>), [Darby Losey](loseydm@uw.edu), and [Nolan Strait](nlstrait@cs.washington.edu). This 
 repository contains many useful Python modules for EEG-related experiments and data analysis. Some of the most popular 
 functions include:
 * Python interface with major EEG hardware devices (BrainAmp, OpenBCI, and Emotiv)
