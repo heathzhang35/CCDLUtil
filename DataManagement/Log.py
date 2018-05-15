@@ -29,8 +29,8 @@ class Log(object):
         if header is not None:
             self.f.write(header)
         # create new thread and start logging to file
-        self._start_log(verbose=verbose)
-        self._is_logging = False
+        self.is_logging = False
+        self._start_log()
 
     def info(self, message):
         """
@@ -45,7 +45,7 @@ class Log(object):
         assert type(body) is str
         return body if body.endswith("\n") else body + "\n"
 
-    @threaded(False)
+    @threaded(True)
     def _start_log(self):
         """
         Starts reading items from the queue.  All items passed to the queue must be a string or it will be converted
@@ -57,14 +57,17 @@ class Log(object):
         :return: Runs forever.  Kill thread to terminate.
         """
         self._is_logging = True
-        while True:
-            body = self.log_queue.get()
-            assert type(body) is str
-            body = Log._append_log(body)
+        while self._is_logging:
+            body = Log._append_log(self.log_queue.get())
             if self._verbose:
                 print(body)
             self.f.write(body)
             self.f.flush()
+        print("log quit")
 
     def stop_logging(self):
         self._is_logging = False        
+
+    def is_logging(self) -> bool:
+        return self._is_logging
+        
