@@ -5,8 +5,7 @@ This takes data from a queue and writes it to disk.  This is typically event dat
 an experiment (not EEG data).
 
 """
-import CCDLUtil.DataManagement.StringParser as StringParser
-import Queue
+from queue import Queue
 from CCDLUtil.Utility.Decorators import threaded
 
 
@@ -24,12 +23,14 @@ class Log(object):
         :param log_queue: queue to read items from
         :param header:
         """
-        self.f = file(subject_log_file_path, 'w')
-        self.log_queue = Queue.Queue()
+        self.f = open(subject_log_file_path, 'w')
+        self.log_queue = Queue()
+        self._verbose = verbose
         if header is not None:
             self.f.write(header)
         # create new thread and start logging to file
         self._start_log(verbose=verbose)
+        self._is_logging = False
 
     def info(self, message):
         """
@@ -39,8 +40,13 @@ class Log(object):
         """
         self.log_queue.put(message)
 
-    @threaded(True)
-    def _start_log(self, verbose=False):
+    @staticmethod
+    def _append_log(body) -> str:
+        assert type(body) is str
+        return body if body.endswith("\n") else body + "\n"
+
+    @threaded(False)
+    def _start_log(self):
         """
         Starts reading items from the queue.  All items passed to the queue must be a string or it will be converted
         (raising a warning).  If no new line is at the end of the string, one will be added.
@@ -50,12 +56,15 @@ class Log(object):
         :param verbose: If verbose, will print the items to console.  Defaults to False.
         :return: Runs forever.  Kill thread to terminate.
         """
-
+        self._is_logging = True
         while True:
             body = self.log_queue.get()
             assert type(body) is str
-            body = StringParser.idempotent_append_newline(body)
-            if verbose:
-                print body
+            body = Log._append_log(body)
+            if self._verbose:
+                print(body)
             self.f.write(body)
             self.f.flush()
+
+    def stop_logging(self):
+        self._is_logging = False        
