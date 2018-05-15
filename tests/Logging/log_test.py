@@ -1,7 +1,7 @@
 import time
 import unittest
-from CCDLUtil.DataManagement.Log import Log as Logger
-from CCDLUtil.Utility.Decorators import threaded
+from DataManagement.Log import Log as Logger
+from Utility.Decorators import threaded
 
 def read_text(f):
     while True:
