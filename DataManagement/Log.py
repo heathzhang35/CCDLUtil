@@ -5,8 +5,10 @@ This takes data from a queue and writes it to disk.  This is typically event dat
 an experiment (not EEG data).
 
 """
+import sys, os
 from queue import Queue
-from CCDLUtil.Utility.Decorators import threaded
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Utility.Decorators import threaded
 
 
 class Log(object):
