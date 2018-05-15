@@ -1,10 +1,9 @@
 import sys
-sys.path.insert(0, 'C:\Users\Experimenter\PycharmProjects\MagStimInterface')
 from datetime import datetime
 import web
-from Magstim.MagstimInterface import Rapid2
 import time
 import requests
+from API.Magstim.MagstimInterface import Rapid2
 from threading import Lock, Thread
 
 # Separate thread that keeps the TMS awake (unneeded if server is running)
@@ -61,12 +60,3 @@ class TMS():
         time.sleep(prior_sleep_dur)
 
 
-if __name__ == '__main__':
-    fire_twice = False
-    tms = TMS()
-    tms.tms_arm()
-    time.sleep(2)
-    tms.tms_fire(1)
-
-    time.sleep(0.5)
-    tms.tms_disarm()
