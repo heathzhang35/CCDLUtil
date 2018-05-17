@@ -7,7 +7,7 @@ from random import randrange  # for starfield, random number generator
 from random import randint
 import scipy.signal as sig
 import CCDLUtil.DataManagement.DataParser as CCDLDataParser
-import Queue
+import queue
 
 
 # For debugging NFT; is updated live by visualizer.py.
@@ -135,12 +135,12 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
                     channel -= 1
                     if channel == -1:
                         channel = 2
-                    print channel
+                    print(channel)
                 if event.key == pygame.K_RIGHT: #right changes channel in the opposite direction in the montage
                     channel += 1
                     if channel == 3:
                         channel = 0
-                    print channel
+                    print(channel)
                 if event.key == pygame.K_UP:    #This magnifies the trace
                     SizeMultiplier *= 1.5
                 if event.key == pygame.K_DOWN:  #this reduces the trace
@@ -192,7 +192,7 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
             if len(values[0, :]) == fs * 5:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand.
 
                 #print BaselinedValues[channel, :].shape
-                print BaselinedValues.shape
+                print(BaselinedValues.shape)
                 freq, density = sig.welch(BaselinedValues, fs=fs, nperseg=512, noverlap=200, scaling='density')
                 #print 'Density.shape', density.shape
 
@@ -219,7 +219,7 @@ def get_data_packet(data_queue):
     try:
         data_packet = data_queue.get(False)  # taken in as shape (sample, channel)
         return np.swapaxes(data_packet, axis1=0, axis2=1)
-    except Queue.Empty:
+    except queue.Empty:
         pass
 
 

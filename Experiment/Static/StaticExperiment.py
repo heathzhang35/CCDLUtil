@@ -4,7 +4,7 @@ This contains methods for collecting data in order to train a classifier for the
 
 import os
 import time
-import Queue
+import queue
 import winsound
 import datetime
 import threading
@@ -35,7 +35,7 @@ END_TEXT_DICT = {'text': 'Task Complete', 'pos': (None, 100), 'color': (255, 0, 
 def get_user_info(data_storage_path, take_init):
     # subject_data_folder_path ends with /
     subject_num, subject_data_folder_path = CCDLFP.manage_storage(data_storage_location=data_storage_path, take_init=take_init)
-    task = raw_input('Enter Task: ') if take_init else "No specified task_description"
+    task = input('Enter Task: ') if take_init else "No specified task_description"
     return subject_num, subject_data_folder_path, task
 
 
@@ -44,7 +44,7 @@ def print_info(message, trial_index, start_time):
     prints our passed message, our trial index and our start time converted over to minutes and seconds.
     """
     m, s = divmod(time.time() - start_time, 60)
-    print message, trial_index, '\t', "%d:%02d" % (m, s)
+    print(message, trial_index, '\t', "%d:%02d" % (m, s))
 
 
 def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, vebose=True, out_buffer_queue=None, channels_for_live='All'):
@@ -60,7 +60,7 @@ def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, v
     """
 
     # # Start our threads for running the EEG.
-    data_save_queue = Queue.Queue()
+    data_save_queue = queue.Queue()
     eeg = None
     if eeg_system == CCDLConstants.EEGSystemNames.GUSB_AMP:
         eeg = CCDLGusb.GUSBAmpStreamer(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, subject_name=str(subject_num))
@@ -77,7 +77,7 @@ def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, v
         threading.Thread(target=lambda: CCDLEEGDatasaver.start_eeg_data_saving(save_data_file_path=save_data_file_path, queue=data_save_queue)).start()
         threading.Thread(target=lambda: eeg.start_recording()).start()
         if vebose:
-            print "Saving EEG data to:\t", os.path.abspath(save_data_file_path)
+            print("Saving EEG data to:\t", os.path.abspath(save_data_file_path))
     return eeg, data_save_queue
 
 
@@ -119,8 +119,8 @@ def static_eeg_data_collection_experiment_setup(data_storage_path, eeg_system_ty
     crosshair_mp_queue = multiprocessing.Queue()
     multiprocessing.Process(target=run_pygame, args=(crosshair_mp_queue,)).start()
 
-    logger_queue = Queue.Queue()  # multithreading queue
-    arduino_queue = Queue.Queue()
+    logger_queue = queue.Queue()  # multithreading queue
+    arduino_queue = queue.Queue()
 
     if run_arduino:
         threading.Thread(target=lambda xx=arduino_queue, yy=arduino_comport: CCDLArduino.Arduino2LightInterface(com_port=yy).read_from_queue(queue=xx)).start()
@@ -131,7 +131,7 @@ def static_eeg_data_collection_experiment_setup(data_storage_path, eeg_system_ty
     # If we are wanting to save our data, we'll start our logging thread.
     threading.Thread(target=lambda: CCDLLog.Log(log_queue=logger_queue, subject_log_file_path=subject_log_file_path).start_log(verbose=False)).start()
     if verbose:
-        print "Saving log to:\t", os.path.abspath(subject_log_file_path)
+        print("Saving log to:\t", os.path.abspath(subject_log_file_path))
 
     # Starts our eeg and saves data.
     eeg, data_save_queue = start_eeg(eeg_system_type, subject_data_folder_path, subject_num)

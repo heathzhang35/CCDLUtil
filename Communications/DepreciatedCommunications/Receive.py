@@ -7,7 +7,7 @@ to a string.
 
 import os
 import socket
-import Queue
+import queue
 import threading
 import warnings
 
@@ -47,13 +47,13 @@ class Receive(object):
                 self.UDPSock.close()
 
 if __name__ == '__main__':
-    RECEIVE_MESSAGE_QUEUE = Queue.Queue()
+    RECEIVE_MESSAGE_QUEUE = queue.Queue()
     RECEIVE_OBJECT = Receive(port=13000, receive_message_queue=RECEIVE_MESSAGE_QUEUE)
     threading.Thread(target=RECEIVE_OBJECT.receive_from_queue).start()
-    print "Waiting to Receive"
+    print("Waiting to Receive")
     while True:
         data = RECEIVE_MESSAGE_QUEUE.get()
-        print "Received message: " + data
+        print("Received message: " + data)
 
 
 

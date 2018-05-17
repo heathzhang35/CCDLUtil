@@ -27,7 +27,7 @@ def get_channel_info(eeg_system):
     elif eeg_system == CCDLConstants.EEGSystemNames.BRAIN_AMP:
         channel_list = ['Fp1', 'Fp2', 'F3', 'F4', 'C3', 'C4', 'P3', 'P4', 'O1', 'O2', 'F7', 'F8', 'T7', 'T8', 'P7', 'P8', 'Fz',
                         'Cz', 'Pz', 'Oz', 'FC1', 'FC2', 'CP1', 'CP2', 'FC5', 'FC6', 'CP5', 'CP6', 'TP9', 'TP10', 'POz']
-        channel_dict = dict(zip(channel_list, range(len(channel_list)))) if channel_list is not None else None
+        channel_dict = dict(list(zip(channel_list, list(range(len(channel_list)))))) if channel_list is not None else None
     elif eeg_system == CCDLConstants.EEGSystemNames.OpenBCI:
         pass
     else:
@@ -110,7 +110,7 @@ def save_classifier(log_file_path, classifier, verbose=True):
     new_path = log_file_path.replace('log.txt', 'classifier.pickle')
     CCDLFileParser.save_pickle_file(pickle_file_path=new_path, data=classifier)
     if verbose:
-        print "Classifier saved to:", new_path
+        print("Classifier saved to:", new_path)
 
 
 def main(log_file_path, eeg_file_path, eeg_type, channel_list, channel_dict, labels, relevant_indexes, feature_type, left_ssvep=11, right_ssvep=13, extract_by='indexes'):
@@ -166,7 +166,7 @@ def main(log_file_path, eeg_file_path, eeg_type, channel_list, channel_dict, lab
     features = features.squeeze()
 
     """ Fit Our Classifier """
-    print "Cross Validation Score:", np.average(CCDLCV.run_leave_one_out_cv(features=features, labels=labels))
+    print("Cross Validation Score:", np.average(CCDLCV.run_leave_one_out_cv(features=features, labels=labels)))
     lda = LinearDiscriminantAnalysis()
     lda.fit(X=features, y=labels)
     save_classifier(log_file_path=log_file_path, classifier=lda)

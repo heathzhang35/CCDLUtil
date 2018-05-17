@@ -23,7 +23,7 @@ within this same folder.
 import socket
 import struct
 import time
-import Queue
+import queue
 import numpy as np
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterface
@@ -85,8 +85,8 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         try:
             self.con.connect(("localhost", 51244))
         except:
-            print "--Ensure that the BrainVision software is on and the dongle is plugged in and functioning."
-            print "See CCDLUtil Documentation for instructions on how to run the BrainVision EEG system --"
+            print("--Ensure that the BrainVision software is on and the dongle is plugged in and functioning.")
+            print("See CCDLUtil Documentation for instructions on how to run the BrainVision EEG system --")
             time.sleep(1)
             raise
 
@@ -176,7 +176,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         Start our recording
         """
         # ##### Main Loop #### #
-        print "start recording"
+        print("start recording")
         while True:
             raw_data, msgsize, msgtype = self.get_raw_data()
             # Perform action dependent on the message type
@@ -198,7 +198,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
                 # Check for overflow #
                 ######################
                 if self.last_block != -1 and block > self.last_block + 1:
-                    print "*** Index: " + str(self.data_index) + "OVERFLOW with " + str(block - self.last_block) + " datablocks ***"
+                    print("*** Index: " + str(self.data_index) + "OVERFLOW with " + str(block - self.last_block) + " datablocks ***")
                     if self.subject_data_path is not None:
                         with open(self.subject_data_path + self.subject_name + '_Overflow.txt', 'a') as handle_f:
                             handle_f.write(str(self.data_index) + '\t' + str(block - self.last_block) + '\n')
@@ -230,8 +230,8 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         ret_str = ''
         data_index_str = str(data_index)
         data_recieve_time_str = str(data_recieve_time)
-        for ii in xrange(downsampled_matrix.shape[0]):
-            ret_str += ','.join([data_index_str, data_recieve_time_str] + map(str, list(downsampled_matrix[ii, :]))) + '\n'
+        for ii in range(downsampled_matrix.shape[0]):
+            ret_str += ','.join([data_index_str, data_recieve_time_str] + list(map(str, list(downsampled_matrix[ii, :])))) + '\n'
         return ret_str
 
     def downsample_all_channels(self, data, resolutions):
@@ -247,7 +247,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         # Because we want to sample at 500 Hz, we need to take 10x as many samples, so for every packet,
         # we need to collect 10 data points out of the 100 (aka, we need to collect every 10th data point)
 
-        indexes_needed = range(0, 100, 10)
+        indexes_needed = list(range(0, 100, 10))
         # Shape is (Samples, Channels)
         channels = np.zeros((len(indexes_needed), len(resolutions)))
         for ii, resolution in enumerate(resolutions):
@@ -273,7 +273,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         # we need to collect 10 data points out of the 100 (aka, we need to collect every 10th data point)
 
         # 100 is the number of samples we get once
-        indexes_needed = range(0, 100, 10)
+        indexes_needed = list(range(0, 100, 10))
         # Shape is (Samples, Channels)
         # size is correct: 10 x 1
         channels = np.zeros((len(indexes_needed), len(self.channels_for_live)))
@@ -296,7 +296,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         # Print markers, if there are some in actual block
         if marker_count > 0:
             for m in range(marker_count):
-                print "Marker " + markers[m].description + " of type " + markers[m].type
+                print("Marker " + markers[m].description + " of type " + markers[m].type)
 
     @staticmethod
     def calc_avg_power(data1s, channel_count, sampling_interval, resolutions):
@@ -308,7 +308,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
             for i in range(len(data1s)):
                 avg = avg + data1s[i] * data1s[i] * resolutions[i % channel_count] * resolutions[i % channel_count]
             avg /= len(data1s)
-            print "Average power: " + str(avg)
+            print("Average power: " + str(avg))
             return []
         else:
             return data1s
@@ -338,9 +338,9 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         if self.data_save_queue is not None:
             self.data_save_queue.put((None, None, meta_info_str))
         if verbose:
-            print meta_info_str
+            print(meta_info_str)
 
-        channel_dict = dict(zip(channel_names, range(channel_count)))
+        channel_dict = dict(list(zip(channel_names, list(range(channel_count)))))
         return channel_count, sampling_interval, resolutions, channel_names, channel_dict, meta_info_str
 
     def get_raw_data(self):

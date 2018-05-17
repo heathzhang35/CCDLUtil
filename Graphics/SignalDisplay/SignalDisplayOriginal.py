@@ -120,12 +120,12 @@ def main():
                     channel -= 1
                     if channel == -1:
                         channel = 2
-                    print channel
+                    print(channel)
                 if event.key == pygame.K_RIGHT: #right changes channel in the opposite direction in the montage
                     channel += 1
                     if channel == 3:
                         channel = 0
-                    print channel
+                    print(channel)
                 if event.key == pygame.K_UP:    #This magnifies the trace
                     SizeMultiplier *= 1.5
                 if event.key == pygame.K_DOWN:  #this reduces the trace

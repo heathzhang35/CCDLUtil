@@ -83,7 +83,7 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 			data = [ch.GetSignal() for ch in h.Channels()]
 			self.data_index += 1
 		except Exception as e:
-			print((e.message, e))
+			print(e.message, e)
 			# continue to run, ignore the incomplete packet
 			return
 
@@ -112,5 +112,5 @@ if __name__ == '__main__':
 	streamer.start_saving_data(save_data_file_path='test.csv', header='Sample Header')
 	cue = 'start'
 	while cue != 'stop':
-		cue = eval(input("Enter stop to finish recording: "))
+		cue = input("Enter stop to finish recording: ")
 	streamer.stop_recording()

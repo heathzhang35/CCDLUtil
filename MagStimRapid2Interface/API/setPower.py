@@ -9,5 +9,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     res = requests.post('http://localhost:%d/TMS/power/%d' % (args.port, args.powerLevel))
-    print res.status_code, res.text
+    print(res.status_code, res.text)
     res.close()

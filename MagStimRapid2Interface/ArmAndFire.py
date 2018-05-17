@@ -3,7 +3,7 @@ from datetime import datetime
 import web
 import time
 import requests
-from API.Magstim.MagstimInterface import Rapid2
+from .API.Magstim.MagstimInterface import Rapid2
 from threading import Lock, Thread
 
 # Separate thread that keeps the TMS awake (unneeded if server is running)

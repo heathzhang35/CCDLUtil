@@ -6,8 +6,8 @@ public network connection is disabled)
 """
 from CCDLUtil.Utility.Decorators import threaded  # for running method in new thread
 import socket
-import Queue
-import Util
+import queue
+from . import Util
 
 
 class TCPClient(object):
@@ -27,8 +27,8 @@ class TCPClient(object):
         self.TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.TCPSock.connect((self.ip, self.port))
 
-        self.send_message_queue = Queue.Queue()
-        self.receive_message_queue = Queue.Queue()
+        self.send_message_queue = queue.Queue()
+        self.receive_message_queue = queue.Queue()
 
         self._start_receive_from_queue()
         self._start_send_to_queue()
@@ -56,7 +56,7 @@ class TCPClient(object):
         while True:
             received_message = Util.recv_msg(self.TCPSock)
             # received_message = self.TCPSock.recv(self.buf)
-            if self.verbose: print "Server sends: " + received_message
+            if self.verbose: print("Server sends: " + received_message)
             self.receive_message_queue.put(received_message)
 
     @threaded(False)
@@ -66,7 +66,7 @@ class TCPClient(object):
         """
         while True:
             message_to_send = str(self.send_message_queue.get())
-            if self.verbose: print "Sending", message_to_send
+            if self.verbose: print("Sending", message_to_send)
             Util.send_msg(self.TCPSock, message_to_send)
             # self.TCPSock.send(message_to_send)
 
@@ -74,10 +74,10 @@ class TCPClient(object):
 if __name__ == '__main__':
     # preston: 69.91.185.63
     client = TCPClient(server_ip='205.175.118.24', port=9999)
-    print "Connection with server successful!"
+    print("Connection with server successful!")
 
     while True:
         msg = str(client.receive_message())
-        print "msg len:", len(msg)
+        print("msg len:", len(msg))
         msg += "?!"
         client.send_message(msg)

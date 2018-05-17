@@ -42,8 +42,8 @@ To show a blank screen, call:
 import pygame
 import sys
 import os
-import Queue
-import PyCrosshair as CCDLCrosshair
+import queue
+from . import PyCrosshair as CCDLCrosshair
 import warnings
 
 class CursorTask(CCDLCrosshair.PyCrosshair):
@@ -498,7 +498,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
                     self.q_action_dictionary[key](args)
                 else:
                     self.q_action_dictionary[key](*args)
-            except Queue.Empty:
+            except queue.Empty:
                 pass
             self.clear_events()
             timer.tick(self.tick_time)

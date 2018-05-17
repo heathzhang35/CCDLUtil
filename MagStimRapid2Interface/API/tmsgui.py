@@ -5,8 +5,8 @@ from wx.lib import intctrl
 import subprocess
 
 import web
-import Magstim.Rapid2Constants
-from Magstim.MagstimInterface import Rapid2
+from . import Magstim.Rapid2Constants
+from .Magstim.MagstimInterface import Rapid2
 import sys
 import argparse
 import time
@@ -27,7 +27,7 @@ POWER_THRESHOLD = 80;
 PERCENT_THRESHOLD = 100;
 
 from mock import patch, MagicMock
-import server
+from . import server
 
 urls = (
     '/', 'index',
@@ -199,14 +199,14 @@ class MainWindow(wx.Frame):
 		self.armSizer.Layout()
 		self.controlLevelSizer.Layout()
 		
-		print 'Connecting to port ' + str(self.port)
+		print('Connecting to port ' + str(self.port))
 		self.serverThread = ServerThread(port = self.port)
         	
 	"""
 	Disconnect from the port by closing the GUI
 	"""
 	def DisconnectFromPort(self, e):
-		print 'Disconnecting from port ' + str(self.port)
+		print('Disconnecting from port ' + str(self.port))
 		sys.exit()
 		
 	"""

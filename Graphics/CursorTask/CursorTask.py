@@ -8,7 +8,7 @@ Example:
 """
 
 import pygame
-import PyCrosshair as Crosshair
+from . import PyCrosshair as Crosshair
 from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
 

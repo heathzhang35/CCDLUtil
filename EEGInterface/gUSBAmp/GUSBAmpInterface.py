@@ -2,7 +2,7 @@
 import socket
 import struct
 import time
-import Queue
+import queue
 import threading
 import CCDLUtil.EEGInterface.DataSaver
 import numpy as np
@@ -47,15 +47,15 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         elif misc_queue_list is not None and len(misc_queue_list) != len(misc_queue_list_channels):
             raise ValueError('Misc_queue_list and misc_queue_list_channels must be the same length')
         self.misc_queue_list, self.misc_queue_list_channels = misc_queue_list, misc_queue_list_channels
-        self.zipped_misc_queue_and_channel_list = zip(self.misc_queue_list, self.misc_queue_list_channels)
+        self.zipped_misc_queue_and_channel_list = list(zip(self.misc_queue_list, self.misc_queue_list_channels))
         self.samples_to_save = samples_to_save
 
         # first resolve an EEG stream on the lab network
-        print "looking for an EEG stream..."
+        print("looking for an EEG stream...")
         self.streams = pylsl.resolve_stream('type', 'EEG')
 
         # create a new inlet to read from the stream
-        print "Creating inlet..."
+        print("Creating inlet...")
         self.inlet = pylsl.StreamInlet(self.streams[0])
 
         self.current_index = 0
@@ -64,7 +64,7 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         """
         Start our recording
         """
-        print "Starting recording..."
+        print("Starting recording...")
 
         # samples to save counter
         counter = 0
@@ -75,7 +75,7 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         while True:
             sample, timestamp = self.inlet.pull_sample()
             if self.current_index == 0:
-                print "Receiving Data:", sample
+                print("Receiving Data:", sample)
 
 
             # Get the time we collected the sample
@@ -115,11 +115,11 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
                 misc_queue_buffer = CCDLDataParser.stack_epochs(existing=misc_queue_buffer, new_trial=trimmed_data_for_out_queue, axis=0)
                 # when we save up enough samples, send them to out queue
                 if counter >= self.samples_to_save:
-                    print 'misc shape', misc_queue_buffer.shape
+                    print('misc shape', misc_queue_buffer.shape)
                     misc_queue.put(misc_queue_buffer)
                     counter = 0
 
 
 if __name__ == '__main__':
-    dc = GUSBAmpStreamer(channels_for_live='All', out_buffer_queue=Queue.Queue, data_save_queue=None)
+    dc = GUSBAmpStreamer(channels_for_live='All', out_buffer_queue=queue.Queue, data_save_queue=None)
     dc.start_recording()

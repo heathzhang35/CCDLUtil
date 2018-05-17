@@ -65,7 +65,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
         except Exception as e:
             # If we throw an error in this portion of the code, exit everything
-            print e.message, e
+            print(e.message, e)
             # continue to run, ignore the incomplete packet
             return
 
@@ -113,14 +113,14 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         Starts the open BciHwInter streamer. Called in a new thread
         """
 
-        print 'start recording'
+        print('start recording')
         try:
             self.board.start_streaming(self.callback_fn)
         except serial.SerialException:
             pass
 
     def stop_recording(self):
-        print 'stop recording'
+        print('stop recording')
         self.stopped = True
         self.board.stop()
         self.board.disconnect()
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     obs.start_saving_data(save_data_file_path='TestDataLoss/testing_3.csv', header="Sample Header")
     cue = 'start'
     while cue != 'stop':
-        cue = raw_input("Enter stop to finish recording: ")
+        cue = input("Enter stop to finish recording: ")
 
     obs.stop_recording()
 

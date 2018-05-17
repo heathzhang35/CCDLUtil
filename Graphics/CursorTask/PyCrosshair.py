@@ -14,7 +14,7 @@ To show a blank screen, call:
 import pygame
 import sys
 import os
-import Queue
+import queue
 from CCDLUtil.Utility.Decorators import threaded
 from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
@@ -44,7 +44,7 @@ class PyCrosshair(object):
         :param crosshair_thickness: thickness of the crosshair in pixels
         """
         # event queue
-        self.event_queue = Queue.Queue()
+        self.event_queue = queue.Queue()
 
         # screen size
         self.screen_width, self.screen_height = screen_size_width, screen_size_height
@@ -203,7 +203,7 @@ class PyCrosshair(object):
             self._clear_events()
             try:
                 self.event_queue.get()
-            except Queue.Empty:
+            except queue.Empty:
                 pass
             self._clear_events()
             timer.tick(self.tick_time)

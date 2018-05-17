@@ -1,5 +1,5 @@
 import CCDLUtil.EEGInterface.EEGInterface as EEGParent
-import Constants
+from . import Constants
 import ctypes as ct
 import sys
 import time
@@ -50,16 +50,16 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         user = ct.pointer(user_id)
         ready_to_collect = False
         # start connection
-        print "Connecting..."
+        print("Connecting...")
         if self.libEDK.EE_EngineConnect("Emotiv Systems-5") != 0: # connection failed
-            print "Emotiv Engine start up failed."
+            print("Emotiv Engine start up failed.")
             self.stop_connection(e_event=e_event, e_state=e_state)
             sys.exit(1)
-        print "Connected! Start receiving data..."
+        print("Connected! Start receiving data...")
         # write data to file
         f = open(eeg_file_path, 'w')
         # write header
-        print >>f, Constants.HEADER
+        print(Constants.HEADER, file=f)
         h_data = self.libEDK.EE_DataCreate()
         self.libEDK.EE_DataSetBufferSizeInSec(secs)
         # start recording
@@ -70,7 +70,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
                 self.libEDK.EE_EmoEngineEventGetUserId(e_event, user)
                 # add user
                 if event_type == 16:
-                    print "User added"
+                    print("User added")
                     self.libEDK.EE_DataAcquisitionEnable(user_id, True)
                     ready_to_collect = True
             if ready_to_collect:
@@ -88,16 +88,16 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
                         data = np.zeros(23)
                         for i in range(22):
                             self.libEDK.EE_DataGet(h_data, Constants.TARGET_CHANNEL_LIST[i], ct.byref(arr), n_sam)
-                            print >>f,arr[sampleIdx],",",
+                            print(arr[sampleIdx],",", end=' ', file=f)
                             data[i] = arr[sampleIdx]
                         # write our own time stamp
                         t = time.time()
                         data[-1] = t
-                        print >>f, t,
+                        print(t, end=' ', file=f)
                         # put data onto out buffer queue
                         self.out_buffer_queue.put(data)
                         # switch line
-                        print >>f, '\n',
+                        print('\n', end=' ', file=f)
             time.sleep(0.2)
         # not sure the use of this in the original program...
         self.libEDK.EE_DataFree(h_data)
@@ -117,7 +117,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
 @threaded(False)
 def get_data(emotiv):
     while True:
-        print emotiv.out_buffer_queue.get()
+        print(emotiv.out_buffer_queue.get())
 
 
 if __name__ == '__main__':

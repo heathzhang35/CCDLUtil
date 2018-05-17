@@ -8,5 +8,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     res = requests.post('http://localhost:%d/TMS/arm' % args.port)
-    print res.status_code, res.text
+    print(res.status_code, res.text)
     res.close()

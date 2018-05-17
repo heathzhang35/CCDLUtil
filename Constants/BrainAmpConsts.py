@@ -11,7 +11,7 @@ FS = 500
 CHANNEL_LIST = ['Fp1', 'Fp2', 'F3', 'F4', 'C3', 'C4', 'P3', 'P4', 'O1', 'O2', 'F7', 'F8', 'T7', 'T8', 'P7', 'P8',
                 'Fz', 'Cz', 'Pz', 'Oz', 'FC1', 'FC2', 'CP1', 'CP2', 'FC5', 'FC6', 'CP5', 'CP6', 'TP9', 'TP10', 'POz']
 # channel dictionary
-CHANNEL_DICT = dict(zip(CHANNEL_LIST, range(len(CHANNEL_LIST))))
+CHANNEL_DICT = dict(list(zip(CHANNEL_LIST, list(range(len(CHANNEL_LIST))))))
 
 '''About the CSV File'''
 ###############

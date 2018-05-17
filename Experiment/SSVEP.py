@@ -74,7 +74,7 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
     cursor_task.set_text_dictionary_list({'text': prompt, 'pos': (None, 150), 'color': (255, 0, 0)})
     # graphic related constants
     cursor_x = window_width // 2
-    print cursor_x
+    print(cursor_x)
     boundary_left = 200
     boundary_right = window_width - 200
     # mark start time
@@ -108,7 +108,7 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
                 return DONT_ROTATE, start_time, time.time()
             packet_index += 1
     else:
-        print "Running for real!"
+        print("Running for real!")
         # Else we run the system for real
         QueueManagement.clear_queue(out_buffer_queue)
         # shape of sample is : (sample, channel)

@@ -1,6 +1,6 @@
 import web
-import Magstim.Rapid2Constants
-from Magstim.MagstimInterface import Rapid2
+from . import Magstim.Rapid2Constants
+from .Magstim.MagstimInterface import Rapid2
 import sys
 import argparse
 import time
