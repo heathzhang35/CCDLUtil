@@ -9,3 +9,6 @@
 
 # IDE-related
 .idea/
+
+# do not upload cache
+*__pycache__*
