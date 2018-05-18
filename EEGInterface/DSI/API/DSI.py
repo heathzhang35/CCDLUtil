@@ -45,7 +45,7 @@ __all__ = [
 # global DSI_* functions from the dylib will be appended to this
 
 import os, sys, ctypes
-if sys.version >= '3': unicode = str; basestring = ( bytes, unicode )  # bytes is already defined, unicode is not
+if sys.version >= '3': str = str; str = ( bytes, str )  # bytes is already defined, unicode is not
 else: bytes = str # unicode is already defined, bytes is not
 def IfStringThenRawString( x ):
 	"""
@@ -62,7 +62,7 @@ def IfStringThenRawString( x ):
 	
 	See also IfStringThenNormalString()
 	"""
-	if isinstance( x, unicode ): x = x.encode( 'utf-8' )
+	if isinstance( x, str ): x = x.encode( 'utf-8' )
 	return x
 def IfStringThenNormalString( x ):
 	"""
@@ -88,7 +88,7 @@ class Headset:
 	def __init__( self, arg=None ):
 		self.ptr = arg
 		self.__needs_cleanup = False
-		if arg is None or isinstance( arg, basestring ): # treat arg as port specifier string rather than a pointer
+		if arg is None or isinstance( arg, str ): # treat arg as port specifier string rather than a pointer
 			self.ptr = dll.DSI_Headset_New( IfStringThenRawString( arg ) )
 			self.__needs_cleanup = True
 	def __del__( self ):
@@ -176,7 +176,7 @@ def LoadAPI( dllname = None ):
 			args = [ IfStringThenRawString( arg ) for arg in args ]
 			output = funcptr( *args )
 			err = dll.DSI_ClearError()
-			if err: raise( DSIException( IfStringThenNormalString( err ) ) )
+			if err: raise DSIException
 			if outputClass: output = outputClass( output )
 			return IfStringThenNormalString( output )
 		function.__doc__ = doc
@@ -187,7 +187,7 @@ def LoadAPI( dllname = None ):
 			args = [ IfStringThenRawString( arg ) for arg in args ]
 			output = funcptr( self.ptr, *args )
 			err = dll.DSI_ClearError()
-			if err: raise( DSIException( IfStringThenNormalString( err ) ) )
+			if err: raise DSIException
 			if outputClass: output = outputClass( output )
 			return IfStringThenNormalString( output )
 		method.__doc__ = doc
@@ -208,7 +208,7 @@ def LoadAPI( dllname = None ):
 		funcptr = getattr( dll, funcname )
 		funcptr.restype = ctypetypes[ restype ]
 		outputClass = classes.get( restype, None )
-		for prefix, cls in classes.items():
+		for prefix, cls in list(classes.items()):
 			if funcname.startswith( prefix + '_' ):
 				methodname = funcname[ len( prefix ) + 1 : ]
 				setattr( cls, methodname, wrapmethod( funcptr, outputClass, doc ) )
@@ -222,7 +222,7 @@ def LoadAPI( dllname = None ):
 
 dll, globalFuncs = LoadAPI()	
 locals().update( globalFuncs )
-__all__ += globalFuncs.keys()
+__all__ += list(globalFuncs.keys())
 del globalFuncs
 del LoadAPI
 del Headset.New    # only Headset.__init__() should be calling DSI_Headset_New()
@@ -239,14 +239,14 @@ import sys
 @MessageCallback
 def ExampleMessageCallback( msg, lvl=0 ):
 	if lvl <= 3:  # ignore messages at debugging levels higher than 3
-		print( "DSI Message (level %d): %s" % ( lvl, IfStringThenNormalString( msg ) ) )
+		print(( "DSI Message (level %d): %s" % ( lvl, IfStringThenNormalString( msg ) ) ))
 	return 1
 	
 @SampleCallback
 def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
 	h = Headset( headsetPtr )
 	strings = [ '%s=%+08.2f' % ( IfStringThenNormalString( ch.GetName() ), ch.ReadBuffered() ) for ch in h.Channels() ]
-	print( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) )
+	print(( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) ))
 	sys.stdout.flush()
 	
 @SampleCallback
@@ -255,7 +255,7 @@ def ExampleSampleCallback_Impedances( headsetPtr, packetTime, userData ):
 	fmt = '%s = %5.2f'
 	strings = [ fmt % ( IfStringThenNormalString( src.GetName() ), src.GetImpedanceEEG() ) for src in h.Sources() if src.IsReferentialEEG() and not src.IsFactoryReference() ]
 	strings.append( fmt % ( 'CMF @ ' + h.GetFactoryReferenceString(), h.GetImpedanceCMF() ) )
-	print( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) )
+	print(( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) ))
 	sys.stdout.flush()
 
 def Test( port, arg ):
@@ -270,7 +270,7 @@ def Test( port, arg ):
 		if len( arg.strip() ): h.SetDefaultReference( arg, True )
 	h.Receive( 2.0, 2.0 )  # calls StartDataAcquisition(), then Idle() for 2 seconds, then StopDataAcquisition(), then Idle() for 2 seconds
 	# NB: your application will probably want to use Idle( seconds ) in its main loop instead of Receive()
-	print( h.GetInfoString() )
+	print(( h.GetInfoString() ))
 
 if __name__ == '__main__':
 	args = getattr( sys, 'argv', [ '' ] )

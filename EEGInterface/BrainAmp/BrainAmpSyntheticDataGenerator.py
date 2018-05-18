@@ -27,7 +27,7 @@ within this same folder.
 from socket import *
 from struct import *
 import time
-import Queue
+import queue
 import threading
 import EEGInterface.DataSaver
 import numpy as np
@@ -63,7 +63,7 @@ class BrainAmpSyntheticDataGenerator(object):
         if subject_data_path is None:
             self.data_save_queue = None
         else:
-            self.data_save_queue = Queue.Queue()
+            self.data_save_queue = queue.Queue()
             threading.Thread(target=lambda: EEGInterface.DataSaver.start_eeg_data_saving(subject_data_path, self.data_save_queue, header=None)).start()
 
 
@@ -115,5 +115,5 @@ class BrainAmpSyntheticDataGenerator(object):
 
 
 if __name__ == '__main__':
-    dc = BrainAmpSyntheticDataGenerator('Placeholder', ['C3', 'C4'], Queue.Queue())
+    dc = BrainAmpSyntheticDataGenerator('Placeholder', ['C3', 'C4'], queue.Queue())
     dc.start_recording()

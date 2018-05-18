@@ -1,8 +1,8 @@
 import random
 import time
 
-import OpenBCIHardwareInterface as HardwareInterface
-import OpenBCIInterface
+from . import OpenBCIHardwareInterface as HardwareInterface
+from . import OpenBCIInterface
 
 
 class OpenBCISyntheticData(OpenBCIInterface.OpenBCIStreamer):
@@ -21,6 +21,6 @@ class OpenBCISyntheticData(OpenBCIInterface.OpenBCIStreamer):
         while True:
             packet_id += 1
             time.sleep(1.0 / 250.0)
-            data = [random.randint(0, 10) for _ in xrange(8)]
+            data = [random.randint(0, 10) for _ in range(8)]
             data_packet = HardwareInterface.OpenBCISample(packet_id=packet_id, aux_data=[1, 2, 3], channel_data=data)
             callback(data_packet)

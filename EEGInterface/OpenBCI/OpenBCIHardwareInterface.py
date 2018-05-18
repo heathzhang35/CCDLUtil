@@ -70,7 +70,7 @@ class OpenBCIBoard(object):
         self.port = port
         # might be handy to know API
         self.board_type = "cyton"
-        print("Connecting to V3 at port %s" % (port))
+        print(("Connecting to V3 at port %s" % (port)))
         self.ser = serial.Serial(port=port, baudrate=baud, timeout=timeout)
 
         print("Serial established...")
@@ -311,7 +311,7 @@ class OpenBCIBoard(object):
                 logging.info('Data packets received:' + str(self.log_packet_count))
                 self.log_packet_count = 0;
             logging.warning(text)
-        print("Warning: %s" % text)
+        print(("Warning: %s" % text))
 
     def print_incoming_text(self):
         """
@@ -365,7 +365,7 @@ class OpenBCIBoard(object):
             self.ser.write(b'b')
             self.streaming = True
         while self.streaming:
-            print(struct.unpack('B', self.ser.read())[0]);
+            print((struct.unpack('B', self.ser.read())[0]));
 
             '''Incoming Packet Structure:
           Start Byte(1)|Sample ID(1)|Channel Data(24)|Aux Data(6)|End Byte(1)

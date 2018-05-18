@@ -7,7 +7,7 @@ to a string.
 import os
 import socket
 import threading
-import Queue
+import queue
 import warnings
 
 class Send(object):
@@ -41,12 +41,12 @@ class Send(object):
             self.UDPSock.sendto(message, self.addr)
 
 if __name__ == '__main__':
-    SEND_MESSAGE_QUEUE = Queue.Queue()
+    SEND_MESSAGE_QUEUE = queue.Queue()
     PERSONAL_COMPUTER_IP = '173.250.180.118'
     SEND_OBJECT = Send(host_ip='128.208.5.218', port=13000, send_message_queue=SEND_MESSAGE_QUEUE)
     threading.Thread(target=SEND_OBJECT.run_send_from_queue).start()
     while True:
-        data = raw_input("Enter message to send or type 'exit': ")
+        data = input("Enter message to send or type 'exit': ")
         SEND_MESSAGE_QUEUE.put(data)
 
 

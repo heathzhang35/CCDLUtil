@@ -36,7 +36,7 @@ class TCPServer(object):
         while True:
             message = str(self.conn.recv(self.buf))
             self.receive_message_queue.put(message)
-            print "received message: " + message
+            print("received message: " + message)
             if message == "exit":
                 self.TCPSock.close()
 
@@ -46,5 +46,5 @@ class TCPServer(object):
         """
         while True:
             message_to_send = self.send_message_queue.get()
-            print "Sending... ", message_to_send
+            print("Sending... ", message_to_send)
             self.conn.sendall(message_to_send)

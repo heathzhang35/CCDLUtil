@@ -1,7 +1,7 @@
 # coding=latin-1
 import serial
 import binascii
-import Queue
+import queue
 import threading
 import time
 
@@ -31,7 +31,7 @@ class MagThread(threading.Thread):
                 self.queue.put({'default': 0})
             else:#We got a message
                 time_to_sleep = None
-                key = msg.keys()[0]
+                key = list(msg.keys())[0]
                 value = msg[key]
                 if key=='trigger':
                     time.sleep(value/1000)
@@ -138,7 +138,7 @@ class Magstim(object):
         self.stimDelay = stimDelay
 
         #Set thread
-        self.q=Queue.Queue()
+        self.q=queue.Queue()
 
         #Start the thread to handle the queue.
         self.thread = MagThread(self.q, self) #Pass message handler and context.
@@ -311,7 +311,7 @@ class Rapid2(Magstim):
             if len(response)>=17:
                 self._train_duration=(float(response[14:18]))/10
             if len(response)>=21:
-                print "len(response) > 21\n"
+                print("len(response) > 21\n")
                 # print "len(response)>=21"
                 # print "Response", response
                 # print type(response)

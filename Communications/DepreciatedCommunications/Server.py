@@ -1,10 +1,10 @@
 import EEGInterface.EEG_INDEX as EEG_INDEX
-import SocketServer
+import socketserver
 import os
 import time
 import warnings
 
-class MyTCPHandler(SocketServer.BaseRequestHandler):
+class MyTCPHandler(socketserver.BaseRequestHandler):
     """
     The request handler class for our server.
 
@@ -17,7 +17,7 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         self.queue_list = [] if queue_list is None else queue_list
 
     def handle(self):
-        print "Connected!"
+        print("Connected!")
         while True:
             # self.request is the TCP socket connected to the client
             data = self.request.recv(1024).strip()
@@ -28,7 +28,7 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
 
 
             if not data:
-                print "Game Ended Abruptly!!"
+                print("Game Ended Abruptly!!")
                 time.sleep(2)
                 os._exit(1)
             for q in self.queue_list:
@@ -38,8 +38,8 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
 def start_server(host="192.168.1.2", port=27015, clss=MyTCPHandler):
     # host, port = "128.95.226.122", 27015  # TMS computer
     # Create the server, binding to localhost on port 9999
-    print 'Connecting...'
-    server = SocketServer.TCPServer((host, port), clss)
+    print('Connecting...')
+    server = socketserver.TCPServer((host, port), clss)
     server.serve_forever()
 
 if __name__ == '__main__':

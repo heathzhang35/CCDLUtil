@@ -6,7 +6,7 @@ threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(subject_data_
 
 import sys
 import time
-import Queue
+import queue
 from CCDLUtil.Utility.Decorators import threaded
 import CCDLUtil.DataManagement.StringParser as StringParser
 
@@ -45,7 +45,7 @@ class EEGInterfaceParent(object):
         self.live = live
         self.save_data = save_data
         # A separate queue (other than the one for storing data) that puts the channels_for_live data points on
-        self.out_buffer_queue = Queue.Queue() if live else None
+        self.out_buffer_queue = queue.Queue() if live else None
         # block counter to check overflows of tcpip buffer
         self.last_block = -1
         self.channels_for_live = channels_for_live
@@ -54,7 +54,7 @@ class EEGInterfaceParent(object):
             if self.channels_for_live != 'all':
                 raise ValueError('Invalid channels_for_live parameter')
         # create data save queue
-        self.data_save_queue = Queue.Queue() if save_data else None
+        self.data_save_queue = queue.Queue() if save_data else None
         self.stopped = False
 
     @staticmethod
@@ -127,8 +127,8 @@ class EEGInterfaceParent(object):
                     index, t, data = self.data_save_queue.get()
                 else:
                     index, t, data = self.data_save_queue.get(timeout)
-            except Queue.Empty:
-                print "Data is not being collected."
+            except queue.Empty:
+                print("Data is not being collected.")
                 time.sleep(2)
                 # quit system
                 sys.exit(1)
@@ -136,7 +136,7 @@ class EEGInterfaceParent(object):
             t = '' if t is None else str(t) + ','
             if type(data) is list:
                 # convert our data items to strings
-                data = map(str, data)
+                data = list(map(str, data))
                 # convert our data to a comma separated string
                 data = ','.join(data)
             else:

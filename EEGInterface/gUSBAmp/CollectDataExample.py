@@ -12,4 +12,4 @@ inlet = pylsl.StreamInlet(streams[0])
 while True:
     # get a new sample (you can also omit the timestamp part if you're not interested in it)
     sample, timestamp = inlet.pull_sample()
-    print timestamp, sample
+    print(timestamp, sample)

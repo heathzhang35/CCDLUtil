@@ -1,7 +1,7 @@
 import time
 
-import OpenBCIHardwareInterface as HardwareInterface
-import OpenBCIInterface
+from . import OpenBCIHardwareInterface as HardwareInterface
+from . import OpenBCIInterface
 import ParentInterface.EpochIndex as EpochIndex
 import ParentInterface.OnlinePredScreen as OnlinePredScreen
 from ParentInterface import OnlinePredBufferMessages
@@ -66,7 +66,7 @@ class OpenBCIFilePlayback(OpenBCIInterface.OpenBCIStreamer):
                         self.queue_dict['online_preds_messages'].put(OnlinePredBufferMessages.STOP_AND_RESET)
                         sample_index = 0  # start our sample_index over again.
                     if self.run_buffer_control and sample_index == 0:
-                        print "Starting Collection"
+                        print("Starting Collection")
                         self.queue_dict['online_preds_messages'].put(OnlinePredBufferMessages.START_COLLECTION)
                         correct_label = self.labels[epoch_index]['readable']
                         self.online_pred_screen_queue.put((OnlinePredScreen.OnlinePredScreen.CORRECT_LABEL, correct_label))
@@ -79,7 +79,7 @@ class OpenBCIFilePlayback(OpenBCIInterface.OpenBCIStreamer):
                                                                   channel_data=data_to_send)
                     callback(data_packet)
                 except IndexError:
-                    print "Index Error", epoch_index, sample_index
+                    print("Index Error", epoch_index, sample_index)
                 # We wait for a bit before sending our next data packet.
                 time.sleep(1.0 / self.fs)
                 sample_index += 1
