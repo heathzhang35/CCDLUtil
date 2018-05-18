@@ -18,6 +18,8 @@ class Crosshair(wx.Frame):
             - full_screen: if to use full screen, cannot be used together with width & height
             - screen_width: size of screen in pixels
             - screen_height: height of screen in pixels
+            - crosshair_width: the size of crosshair
+            - pen_thickness: the thickness of crosshair
         """
         wx.Frame.__init__(self, None, title="Crosshair")
         # go full screen?
