@@ -13,8 +13,8 @@ class Crosshair(wx.Frame):
         A wxpython Crosshair that can flash red.
 
         params:
-            - x_pos: x position (defaults to 1920 pixels left of main screen)
-            - y_pos: y position (defaults to 0)
+            - x_pos: x position (defaults to 100)
+            - y_pos: y position (defaults to 100)
             - full_screen: if to use full screen, cannot be used together with width & height
             - screen_width: size of screen in pixels
             - screen_height: height of screen in pixels
@@ -23,10 +23,12 @@ class Crosshair(wx.Frame):
         """
         wx.Frame.__init__(self, None, title="Crosshair")
         # go full screen?
-        self.ShowFullScreen(kwargs.get("full_screen", False))
-        if kwargs.get("full_screen", False) and ("screen_width" in kwargs or "screen_height" in kwargs):
+        full_screen = kwargs.get("full_screen", False) 
+        self.ShowFullScreen(full_screen)
+        if full_screen and ("screen_width" in kwargs or "screen_height" in kwargs):
             raise ValueError("Cannot use full screen and define width.height together!")
-        self.SetPosition((kwargs.get("x_pos", 100), kwargs.get("y_pos", 100)))
+        if not full_screen:
+            self.SetPosition((kwargs.get("x_pos", 100), kwargs.get("y_pos", 100)))
         # some dependency
         self.crosshair_width = kwargs.get("crosshair_width", 30)  
         self.width_half = self.crosshair_width // 2
@@ -72,6 +74,6 @@ class Crosshair(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.App(False)
-    ch = Crosshair(screen_width=500, screen_height=500)
+    ch = Crosshair(full_screen=True)
     ch.Show()
     app.MainLoop()
