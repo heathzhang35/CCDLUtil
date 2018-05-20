@@ -7,7 +7,7 @@ an experiment (not EEG data).
 """
 import sys, os
 from queue import Queue
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 from Utility.Decorators import threaded
 
 

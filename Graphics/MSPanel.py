@@ -10,7 +10,7 @@ matplotlib.use('WXAgg') # to be used in wx
 import matplotlib.animation as animation
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 from Utility.AssertVal import assert_equal
 from Util.Constants import BRAINAMP_CHANNEL_LIST
 
