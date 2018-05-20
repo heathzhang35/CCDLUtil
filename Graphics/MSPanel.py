@@ -1,3 +1,4 @@
+import sys, os
 import csv
 from threading import Thread
 import numpy as np
@@ -9,7 +10,8 @@ matplotlib.use('WXAgg') # to be used in wx
 import matplotlib.animation as animation
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
-from CCDLUtil.Utility.AssertVal import assert_equal
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Utility.AssertVal import assert_equal
 from Util.Constants import BRAINAMP_CHANNEL_LIST
 
 
@@ -66,6 +68,17 @@ class MSPanel(wx.Panel):
         assert_equal(len(data), self.num_channels)
         assert_equal(isinstance(data, np.ndarray), True)
         self.data = data
+
+    def gfp(data):
+        """
+        Calculate GFP
+        Reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4305485/pdf/nihms-652267.pdf
+        """
+        mean = np.mean(data)
+        total = 0.
+        for i in data:
+            total += (i - mean) ** 2
+        return math.sqrt(total / len(electrodes))
 
     def _update_data(self):
         """
@@ -160,6 +173,8 @@ class MSPanel(wx.Panel):
         return norm([self._CENTER[0] - x, self._CENTER[1] - y]) - 0.03 <= self._RADIUS
 
 
+### TESTING ###
+
 def get_data(filename):
     with open(filename, "r") as f:
         reader = csv.reader(f, delimiter='\t')
@@ -180,7 +195,7 @@ if __name__ == '__main__':
     frame.SetSize(600, 600)
     panel = MSPanel(frame)
     # play animation file
-    Thread(target=feed_data, args=(panel, "../data/downsampled_Marked_4-29.csv", )).start()
+    Thread(target=feed_data, args=(panel, "../data/downsampled_Marked_4-29.csv", ), daemon=True).start()
     # panel.draw()
     frame.Show()
     app.MainLoop()
