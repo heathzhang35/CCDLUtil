@@ -13,8 +13,8 @@ class Crosshair(wx.Frame):
         A wxpython Crosshair that can flash red.
 
         params:
-            - x_pos: x position (defaults to 100)
-            - y_pos: y position (defaults to 100)
+            - x_pos: window x position (defaults to 100)
+            - y_pos: window y position (defaults to 100)
             - full_screen: if to use full screen, cannot be used together with width & height
             - screen_width: size of screen in pixels
             - screen_height: height of screen in pixels
@@ -29,6 +29,10 @@ class Crosshair(wx.Frame):
             raise ValueError("Cannot use full screen and define width.height together!")
         if not full_screen:
             self.SetPosition((kwargs.get("x_pos", 100), kwargs.get("y_pos", 100)))
+        self.width = kwargs.get("screen_width", 500) 
+        self.height = kwargs.get("screen_height", 500) 
+        if not full_screen:
+            self.SetSize((self.width, self.height))
         # some dependency
         self.crosshair_width = kwargs.get("crosshair_width", 30)  
         self.width_half = self.crosshair_width // 2

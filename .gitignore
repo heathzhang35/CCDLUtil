@@ -9,6 +9,10 @@
 
 # IDE-related
 .idea/
+.vscode
 
 # do not upload cache
 *__pycache__*
+
+# For macs...
+*DS_Store*
