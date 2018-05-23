@@ -21,6 +21,13 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         self.libEDK = ct.cdll.LoadLibrary(self.lib_path)
         # set EEG file save path
         self.eeg_file_path = eeg_file_path
+        # flag for recording
+        self._recording = False
+        # file to write to
+        self.f = None
+        # events for recording
+        self.e_event = None
+        self.e_state = None
 
     def setup_var(self):
         """
@@ -36,6 +43,13 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         """
         self.start_recording_and_saving_data(self.eeg_file_path)
 
+    def stop_recording(self, stop_streamer=False):
+        if stop_streamer:
+            self._recording = False
+        # give a little time for thread to change flag
+        time.sleep(2)
+        self.f.flush()
+        self.f.close()
 
     def start_recording_and_saving_data(self, eeg_file_path):
         """
@@ -43,7 +57,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         :param eeg_file_path: the path to save eeg file
         """
         # set up variables
-        e_event, e_state, user_id, n_samples, n_sam, composer_port, secs, state = self.setup_var()
+        self.e_event, self.e_state, user_id, n_samples, n_sam, composer_port, secs, state = self.setup_var()
         # pointers
         n_samples_taken = ct.pointer(n_samples)
         data = ct.pointer(ct.c_double(0))
@@ -53,21 +67,27 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         print "Connecting..."
         if self.libEDK.EE_EngineConnect("Emotiv Systems-5") != 0: # connection failed
             print "Emotiv Engine start up failed."
-            self.stop_connection(e_event=e_event, e_state=e_state)
+            self.stop_connection()
             sys.exit(1)
         print "Connected! Start receiving data..."
+        self._recording = True
         # write data to file
-        f = open(eeg_file_path, 'w')
+        self.f = open(eeg_file_path, 'w')
         # write header
-        print >>f, Constants.HEADER
+        for header in Constants.HEADER:
+            # last one in header
+            if header != "TIMESTAMP" and not self.f.closed:
+                self.f.write(header + ",")
+            elif not self.f.closed:
+                self.f.write(header + "\n")
         h_data = self.libEDK.EE_DataCreate()
         self.libEDK.EE_DataSetBufferSizeInSec(secs)
         # start recording
-        while True:
-            state = self.libEDK.EE_EngineGetNextEvent(e_event)
+        while self._recording:
+            state = self.libEDK.EE_EngineGetNextEvent(self.e_event)
             if state == 0:
-                event_type = self.libEDK.EE_EmoEngineEventGetType(e_event)
-                self.libEDK.EE_EmoEngineEventGetUserId(e_event, user)
+                event_type = self.libEDK.EE_EmoEngineEventGetType(self.e_event)
+                self.libEDK.EE_EmoEngineEventGetUserId(self.e_event, user)
                 # add user
                 if event_type == 16:
                     print "User added"
@@ -88,32 +108,42 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
                         data = np.zeros(23)
                         for i in range(22):
                             self.libEDK.EE_DataGet(h_data, Constants.TARGET_CHANNEL_LIST[i], ct.byref(arr), n_sam)
-                            print >>f,arr[sampleIdx],",",
+                            if not self.f.closed:
+                                print >>self.f,arr[sampleIdx],",",
                             data[i] = arr[sampleIdx]
                         # write our own time stamp
                         t = time.time()
                         data[-1] = t
-                        print >>f, t,
+                        if not self.f.closed:
+                            print >>self.f,t,
                         # put data onto out buffer queue
                         self.out_buffer_queue.put(data)
                         # switch line
-                        print >>f, '\n',
+                        if not self.f.closed:
+                            print >>self.f,'\n',
             time.sleep(0.2)
         # not sure the use of this in the original program...
         self.libEDK.EE_DataFree(h_data)
-        self.stop_connection(e_event=e_event, e_state=e_state)
+        # self.stop_connection(self.e_event=self.e_event, e_state=e_state)
 
-    def stop_connection(self, e_event, e_state):
+    def stop_connection(self):
         """
         Stop the connection with Emotiv headset
         :param e_event: e_event
         :param e_state: e_state
         """
         self.libEDK.EE_EngineDisconnect()
-        self.libEDK.EE_EmoStateFree(e_state)
-        self.libEDK.EE_EmoEngineEventFree(e_event)
+        self.libEDK.EE_EmoStateFree(self.e_state)
+        self.libEDK.EE_EmoEngineEventFree(self.e_event)
 
-### dummy code to get data
+    def set_file(self, new_file_path):
+        # stop recording
+        if not self.f.closed:
+            self.stop_recording(stop_streamer=True)
+        self.eeg_file_path = new_file_path
+        self.start_recording()
+
+
 @threaded(False)
 def get_data(emotiv):
     while True:
@@ -123,6 +153,11 @@ def get_data(emotiv):
 if __name__ == '__main__':
     emotiv = EmotivStreamer("test.csv", ".\edk.dll")
     emotiv.start_recording()
-    get_data(emotiv)
+    # get_data(emotiv)
+    time.sleep(5)
+    emotiv.stop_recording(stop_streamer=True)
+    time.sleep(5)
+    emotiv.start_recording()
+
 
 
