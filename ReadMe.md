@@ -15,9 +15,9 @@ Collaborator:
 ## Instructions for use
 
 This is intended as a general library.  If using, please clone into your site-packages folder. Example paths are:
-* Windows: `C:\Python27\Lib\site_packages`
-* OS X: `~/Library/Python/2.7/lib/python/site-packages` (Placing it under `/System` might result in permission issues)
-* Linux: `~/.local/lib/python2.7/site-packages` (If you have other setup, you probably know your system well enough to 
+* Windows: `C:\Python36\Lib\site_packages`
+* OS X: `~/Library/Python/3.6/lib/python/site-packages` (Placing it under `/System` might result in permission issues)
+* Linux: `~/.local/lib/python3.6/site-packages` (If you have other setup, you probably know your system well enough to 
 figure it out)
 
 ## Dependencies
@@ -35,6 +35,7 @@ This module is built to work with python3. Listed below are the dependencies of 
 * sklearn 0.0
 * PsychoPy 1.90.1
 
-To create an virtual environment, run```
+To create an virtual environment, run
+```
 py -3 -m venv <environment folder name>
 ```
