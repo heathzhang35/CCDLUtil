@@ -21,9 +21,7 @@ This is intended as a general library.  If using, please clone into your site-pa
 figure it out)
 
 ## Dependencies
-This module is built to work with Python 2.7 (We are working hard to adapt the whole module to be working with Python 3 
-without using `__future__`, for the latest update please check out the `python3_updates` branch!). Some modules many not
-require all dependencies. 
+This module is built to work with python3. Listed below are the dependencies of `CCDLUtil`. 
 
 * numpy	1.8
 * scipy	1.0.0	
@@ -36,3 +34,7 @@ require all dependencies.
 * six 1.11.0
 * sklearn 0.0
 * PsychoPy 1.90.1
+
+To create an virtual environment, run```
+py -3 -m venv <environment folder name>
+```
