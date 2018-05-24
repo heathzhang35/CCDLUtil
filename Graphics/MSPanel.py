@@ -1,3 +1,4 @@
+import time
 import sys, os
 import csv
 from threading import Thread
@@ -174,19 +175,14 @@ class MSPanel(wx.Panel):
 
 
 ### TESTING ###
-
-def get_data(filename):
-    with open(filename, "r") as f:
-        reader = csv.reader(f, delimiter='\t')
-        # skip header
-        next(reader)
-        for row in reader:
-            yield row
-
-
-def feed_data(panel, filename):
-    for row in get_data(filename):
-        panel.add_data(np.asarray(row))
+def feed_data(eeg_panel):
+    # feed a lot of data
+    i = 0
+    # add data
+    while i < 10000:
+        eeg_panel.add_data(np.random.rand(31))
+        time.sleep(0.004)
+        i += 1
 
 
 if __name__ == '__main__':
@@ -195,7 +191,7 @@ if __name__ == '__main__':
     frame.SetSize(600, 600)
     panel = MSPanel(frame)
     # play animation file
-    Thread(target=feed_data, args=(panel, "../data/downsampled_Marked_4-29.csv", ), daemon=True).start()
+    Thread(target=feed_data, args=(panel, ), daemon=True).start()
     # panel.draw()
     frame.Show()
     app.MainLoop()

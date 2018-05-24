@@ -42,7 +42,7 @@ class Cursor(wx.Frame):
         self.cursor_y = self.height // 2
         # background
         self.SetBackgroundColour("gray")
-        self.Bind(wx.EVT_PAINT, self.repaint)
+        self.Bind(wx.EVT_PAINT, self._repaint)
         self._repaint()
 
     def _repaint(self, event=None):
