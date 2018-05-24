@@ -9,7 +9,7 @@
 
 # IDE-related
 .idea/
-.vscode
+.vscode/
 
 # do not upload cache
 *__pycache__*
