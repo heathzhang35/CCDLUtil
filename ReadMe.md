@@ -35,3 +35,4 @@ require all dependencies.
 * setuptools 28.8.0
 * six 1.11.0
 * sklearn 0.0
+* PsychoPy 1.90.1
