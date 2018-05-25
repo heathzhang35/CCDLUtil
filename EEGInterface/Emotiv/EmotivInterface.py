@@ -101,7 +101,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
                     n_sam = n_samples_taken[0]
                     arr = (ct.c_double*n_samples_taken[0])()
                     ct.cast(arr, ct.POINTER(ct.c_double))
-                    #self.libEDK.EE_DataGet(h_data, 3,byref(arr), nSam)
+                    # self.libEDK.EE_DataGet(h_data, 3,byref(arr), nSam)
                     data = np.array('d') # zeros(n_samples_taken[0],double)
                     for sampleIdx in range(n_samples_taken[0]):
                         # channel 14 + loc data 6 + timestamp 1 = 23
@@ -121,10 +121,9 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
                         # switch line
                         if not self.f.closed:
                             print >>self.f,'\n',
-            time.sleep(0.2)
+                    self.f.flush()
         # not sure the use of this in the original program...
         self.libEDK.EE_DataFree(h_data)
-        # self.stop_connection(self.e_event=self.e_event, e_state=e_state)
 
     def stop_connection(self):
         """
@@ -144,6 +143,7 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         self.start_recording()
 
 
+### Testing ###
 @threaded(False)
 def get_data(emotiv):
     while True:
@@ -154,10 +154,8 @@ if __name__ == '__main__':
     emotiv = EmotivStreamer("test.csv", ".\edk.dll")
     emotiv.start_recording()
     # get_data(emotiv)
-    time.sleep(5)
+    time.sleep(10)
     emotiv.stop_recording(stop_streamer=True)
-    time.sleep(5)
-    emotiv.start_recording()
 
 
 
