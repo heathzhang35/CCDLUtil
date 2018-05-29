@@ -8,7 +8,6 @@ import sys
 import time
 import queue
 from CCDLUtil.Utility.Decorators import threaded
-import CCDLUtil.DataManagement.StringParser as StringParser
 
 
 class EEGInterfaceParent(object):
@@ -17,8 +16,7 @@ class EEGInterfaceParent(object):
     A Parent interface that should be inherited other systems that interface with EEG.
     """
 
-    def __init__(self, channels_for_live='All', live=True, save_data=True, subject_name=None,
-                 subject_tracking_number=None, experiment_number=None):
+    def __init__(self, channels_for_live='All', live=True, save_data=True, subject_name=None, subject_tracking_number=None, experiment_number=None):
         """
         A data collection object for the EEG interface.
         This provides option for live data streaming and saving data to file.
@@ -82,7 +80,7 @@ class EEGInterfaceParent(object):
         """
         To be overridden by child
         """
-        pass
+        self.stopped = True
 
     @threaded(False)
     def start_saving_data(self, save_data_file_path, header=None, timeout=15):
@@ -143,8 +141,23 @@ class EEGInterfaceParent(object):
                 if type(data) is not str:
                     raise TypeError("Invalid data type -- data must be either string or ")
             # add a newline if needed.  Commas are already accounted for
-            data_str = str(index) + str(t) + StringParser.idempotent_append_newline(data)
+            data_str = str(index) + str(t) + append_and_switch_line(data)
             # Write our index and timestamp
             f.write(data_str)
             # Flush our buffer
             f.flush()
+
+
+def append_and_switch_line(string):
+    """
+    Checks if there is a newline on the string.  If there is not, it appends one.
+    Raises a type error if string is not a str object.
+    :param string: String to append newline to.  Throws a type error if not a string.
+    :return: String with a newline character at the end.
+    """
+    if type(string) is not str:
+        raise TypeError
+    if string.endswith('\n'):
+        return string
+    else:
+        return string + '\n'

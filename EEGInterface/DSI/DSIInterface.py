@@ -1,3 +1,6 @@
+import sys, os
+from os import listdir
+import platform
 import CCDLUtil.EEGInterface.EEGInterface
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.DSI.API.DSI as DSI
@@ -25,16 +28,25 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		:param experiment_number: Optional -- Experimental number. Defaults to 'None'
 		:param port: serial port address for communicating with DSI hardware
 		"""
-		super(DSIStreamer, self).__init__(channels_for_live, live, save_data, subject_name, subject_tracking_number,
-		                                  experiment_number)
+		super(DSIStreamer, self).__init__(channels_for_live, live, save_data, subject_name, subject_tracking_number, experiment_number)
 
+
+		__all__ = [
+			'Headset', 'Source', 'Channel',
+			'SampleCallback', 'MessageCallback',
+			'DSIException',
+			'IfStringThenRawString', 'IfStringThenNormalString',
+		]
 		dll, globalFuncs = DSI.LoadAPI()
 		locals().update(globalFuncs)
 		__all__ += list(globalFuncs.keys())
 
-		if port is None:
-			raise ValueError('port cannot be None!')
-
+		# config port
+		if not port:
+			self.port = self._find_dsi_port()
+		else:
+			self.port = port
+		
 		self.h = DSI.Headset()
 		self.h.SetMessageCallback(self.__message_callback)
 		self.h.Connect(port)
@@ -49,7 +61,6 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 			if source_ref is not None:
 				self.h.SetDefaultReference(source_ref, True)
 
-
 	def start_recording(self):
 		"""
         Begins data acquisition
@@ -58,7 +69,6 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		self.h.StartDataAcquisition()
 		pass
 
-
 	def stop_recording(self):
 		"""
 		Stops data acquisition
@@ -66,6 +76,23 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		print('stop recording')
 		self.h.StopDataAcquisition()
 		pass
+
+	def _find_dsi_port(self):
+		# automatically find ports
+		system = platform.system()
+		if platform == "Windows":
+			# TODO: test on windows 10/7
+			pass
+		elif platform == "Darwin":
+			# list dev
+			devs = listdir("/dev/")
+			for dev in devs:
+				print(dev)
+				if "cu.DSI" in dev:
+					self.port = dev
+					break
+		if self.port is None:
+			raise ValueError('Failed to find port automatically. Please check on ports on use it in constructor')
 
 
 	def __message_callback(self, msg, lvl=0):
