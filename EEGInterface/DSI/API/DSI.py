@@ -275,7 +275,7 @@ def Test( port, arg ):
 if __name__ == '__main__':
 	args = getattr( sys, 'argv', [ '' ] )
 	if sys.platform.lower().startswith( 'win' ): default_port = 'COM6'
-	else:                                        default_port = '/dev/cu.DSI7-0009.BluetoothSeri'
+	else:                                        default_port = '/dev/cu.DSI7-7656-BluetoothSeri'
 	
 	# first command-line argument: serial port address
 	if len( args ) > 1: port = args[ 1 ]
@@ -284,5 +284,5 @@ if __name__ == '__main__':
 	# second command-line argument:  name of the Source to be used as reference, or the word 'impedances'
 	if len( args ) > 2: ref = args[ 2 ]
 	else: ref = ''
-	
+
 	Test( port, ref )
