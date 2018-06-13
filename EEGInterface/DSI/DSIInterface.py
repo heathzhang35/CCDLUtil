@@ -37,9 +37,9 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 			'DSIException',
 			'IfStringThenRawString', 'IfStringThenNormalString',
 		]
-		dll, globalFuncs = DSI.LoadAPI()
-		locals().update(globalFuncs)
-		__all__ += list(globalFuncs.keys())
+		#dll, globalFuncs = DSI.LoadAPI()
+		#locals().update(globalFuncs)
+		#__all__ += list(globalFuncs.keys())
 
 		# config port
 		if not port:
@@ -78,21 +78,23 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		pass
 
 	def _find_dsi_port(self):
+
 		# automatically find ports
-		system = platform.system()
-		if platform == "Windows":
+		#system = platform.system()
+
+		if sys.platform.lower().startswith('win'):
 			# TODO: test on windows 10/7
-			pass
-		elif platform == "Darwin":
+			return "COM6"
+
+		#elif platform == "Darwin":
+		else:
 			# list dev
 			devs = listdir("/dev/")
 			for dev in devs:
-				print(dev)
 				if "cu.DSI" in dev:
-					self.port = dev
-					break
-		if self.port is None:
-			raise ValueError('Failed to find port automatically. Please check on ports on use it in constructor')
+					return dev
+
+		raise ValueError('Failed to find port automatically. Please find port manually and pass into constructor')
 
 
 	def __message_callback(self, msg, lvl=0):
@@ -100,7 +102,7 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		return DSI.ExampleMessageCallback(msg, lvl)
 
 
-	def __sample_callback_signals(self, headset_ptr, packet_time, user_data):
+	def __sample_callback_signals(headset_ptr, packet_time, streamer):
 		#DSI.ExampleSampleCallback_Signals(headset_ptr, packet_time, user_data)
 		h = DSI.Headset(headset_ptr)
 
@@ -108,33 +110,33 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		try:
 			# might want to use ch.ReadBuffered()
 			data = [ch.GetSignal() for ch in h.Channels()]
-			self.data_index += 1
+			streamer.data_index += 1
 		except Exception as e:
 			print((e.message, e))
 			# continue to run, ignore the incomplete packet
 			return
 
 		# send to out buffer for live data analysis
-		if self.live:
-			self.out_buffer_queue.put(data)
+		if streamer.live:
+			streamer.out_buffer_queue.put(data)
 
 		# save data
-		if self.save_data:
-			data_str = str(self.data_index) + ',' + str(time.time()) + ',' + ','.join([str(val) for val in data])
-			self.data_save_queue.put((None, None, data_str + '\n'))
+		if streamer.save_data:
+			data_str = str(streamer.data_index) + ',' + str(time.time()) + ',' + ','.join([str(val) for val in data])
+			streamer.data_save_queue.put((None, None, data_str + '\n'))
 
 		# Set EEG INDEX parameters (not sure of purpose)
-		CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.data_index
-		CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.data_index
+		CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX = streamer.data_index
+		CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = streamer.data_index
 
 
-	def __sample_callback_impedances(self, headset_ptr, packet_time, user_data):
+	def __sample_callback_impedances(headset_ptr, packet_time, streamer):
 		# use DSI's default callback
-		DSI.ExampleSampleCallback_Impedances(headset_ptr, packet_time, user_data)
+		DSI.ExampleSampleCallback_Impedances(headset_ptr, packet_time, None)
 
 
 if __name__ == '__main__':
-	streamer = DSIStreamer(port='COM6')
+	streamer = DSIStreamer()
 	streamer.start_recording()
 	streamer.start_saving_data(save_data_file_path='test.csv', header='Sample Header')
 	cue = 'start'
