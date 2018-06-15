@@ -112,9 +112,9 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 	
 	@SampleCallback
-	def __sample_callback_impedances(headset_ptr, packet_time, streamer):
+	def __sample_callback_impedances(headset_ptr, packet_time, user_data):
 		# use DSI's default callback
-		DSI.ExampleSampleCallback_Impedances(headset_ptr, packet_time, None)
+		DSI.ExampleSampleCallback_Impedances(headset_ptr, packet_time, user_data)
 
 
 	@SampleCallback
@@ -123,9 +123,8 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		#DSI.ExampleSampleCallback_Signals(headset_ptr, packet_time, user_data)
 		h = DSI.Headset(headset_ptr)
 
+		# read in data
 		data = None
-
-		# get data points
 		try:
 			# might want to use ch.ReadBuffered()
 			data = [ch.GetSignal() for ch in h.Channels()]
@@ -156,7 +155,6 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 if __name__ == '__main__':
 	streamer = DSIStreamer(live=False)
-	#streamer.init()
 	streamer.start_recording()
 	# TODO: set header based on channel names
 	streamer.start_saving_data(save_data_file_path='test.csv', header='Sample Header', timeout=5)
