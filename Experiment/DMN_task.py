@@ -1,5 +1,6 @@
 from psychopy import visual, core, event
 from random import shuffle, uniform
+from datetime import datetime
 import pandas as pd
 import glob
 
@@ -14,7 +15,8 @@ def connectEEG():
     
     # Initialize the clock once connection/recording is established (tic)
     clock = core.Clock()
-    return clock
+    initial_timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+    return (clock, initial_timestamp)
 
 def runBlock(subjID, blockType, numOfTrials, taskData, win, clock):
     # Start (print something and wait for response before starting first trial)
@@ -84,15 +86,15 @@ def runISI(ISIlength, win):
     core.wait(ISIlength)
 
 def saveData(subjID, taskData, win):
-    # Delete the initialization column
-    del taskData['initialize']
-
     # Check how many files are currently present for this subject
-    fileNum = len(glob.glob('SaveData/' + subjID + '*')) + 1
+    fileNum = len(glob.glob('SaveData/' + subjID + '*.csv')) + 1
 
     # Save the data to csv file
     file_name = ('SaveData/' + subjID + '_R' + str(fileNum) + '.csv')
     taskData.to_csv(file_name, encoding='utf-8')
+
+    # Save the data as a json file
+    taskData.to_json('SaveData/' + subjID + '_R' + str(fileNum) + '.json')
 
     # Close the window
     win.close()
@@ -100,7 +102,7 @@ def saveData(subjID, taskData, win):
 
 if __name__ == "__main__":
     # First ensure EEG is connected
-    clock = connectEEG()
+    [clock, initial_timestamp] = connectEEG()
 
     # Ask for subjectID
     subjID = input('Enter subject ID: ')
@@ -121,7 +123,7 @@ if __name__ == "__main__":
     event.waitKeys()
 
     # Create pandas dataframe to store behavioural data
-    d = {'initialize' : pd.Series([0., 0, 'X', 0., 'X'], \
+    d = {'initialize' : pd.Series([initial_timestamp, 0, 'X', 0., 'X'], \
     index=['trialStart','stimulus','key','RT','blockType'])}
     taskData = pd.DataFrame(d)
 
