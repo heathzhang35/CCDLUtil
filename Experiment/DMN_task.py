@@ -1,8 +1,13 @@
-from psychopy import visual, core, event, sound
+import sys
+from sys import platform
+from psychopy import visual, core, event
 from random import shuffle, uniform
 from datetime import datetime
 import pandas as pd
 import glob
+
+USE_SOUND = platform == "win32"
+if USE_SOUND: from psychopy import sound
 
 trialCnt = 0
 
@@ -10,12 +15,20 @@ def increment():
     global trialCnt
     trialCnt += 1
 
+def play_sound(value):
+    if USE_SOUND:
+        sound.init(rate=44100, stereo=True, buffer=128)
+        sync_beep = sound.Sound(value=value, secs=0.2, octave=4, loops=0)
+        sync_beep.play()
+        return sync_beep
+    else:
+        sys.stdout.write('\a')
+        sys.stdout.flush()
+        return None
+
 def connectEEG():
     # Send audio sync pulse to DSI-streamer
-    sound.init(rate=44100, stereo=True, buffer=128)
-    sync_beep = sound.Sound(value='C', secs=0.2, octave=4, loops=0)
-    sync_beep.play()
-    
+    play_sound('C')            
     # Initialize the clock once connection/recording is established (tic)
     clock = core.Clock()
     initial_timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
@@ -50,18 +63,21 @@ def runBlock(subjID, blockType, numOfTrials, taskData, win, clock):
 
     # Have loop that calls runTrial and runISI
     for trial in list(range(0, numOfTrials)):
-        beep = sound.Sound(value='F', secs=0.2, octave=4, loops=0)
-        runTrial(subjID, stimuli[trial], taskData, blockType, win, clock, beep)
+        beep = play_sound('F')
+        runTrial(subjID, stimuli[trial], taskData, blockType, win, clock, beep, 'F')
         ISIlength = uniform(4,6) # random value generated here
         runISI(ISIlength, win)
 
-def runTrial(subjID, stimulus, taskData, blockType, win, clock, beep):
+def runTrial(subjID, stimulus, taskData, blockType, win, clock, beep, value):
     message.setText(stimulus)
     win.flip()
 
     # Fill in the dataframe
     trialStart = clock.getTime()
-    beep.play()
+    if beep is not None:
+        beep.play()
+    else:
+        play_sound(value)
 
     # Wait for user response
     thisResp = None
@@ -110,13 +126,13 @@ if __name__ == "__main__":
     [clock, initial_timestamp] = connectEEG()
 
     # Ask for subjectID
-    print(' ')
+    print()
     print('-------------------------------------------------------------------')
     print('---Make sure volume is up and audio trigger cable is plugged in!---')
     print('-------------------------------------------------------------------')
-    print(' ')
-    subjID = input('Enter subject ID: ')
-
+    print()
+    # subjID = input('Enter subject ID: ')
+    subjID = input("Enter subject ID: ")
     # Create the window to display
     win = visual.Window(color=[-1,-1,-1], fullscr=True)
 
