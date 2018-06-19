@@ -11,12 +11,13 @@ import random
 
 
 
-SampleCallback  = ctypes.CFUNCTYPE(None,			ctypes.c_void_p, ctypes.c_double, ctypes.c_void_p)
-MessageCallback = ctypes.CFUNCTYPE(ctypes.c_int,	ctypes.c_char_p, ctypes.c_int)
 
 
 
 class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
+
+	SampleCallback  = ctypes.CFUNCTYPE(None,			ctypes.c_void_p, ctypes.c_double, ctypes.c_void_p)
+	MessageCallback = ctypes.CFUNCTYPE(ctypes.c_int,	ctypes.c_char_p, ctypes.c_int)
 
 	# --- Trigger States --- #
 	TRIGGER_OFF = 0
@@ -192,14 +193,13 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 			#return
 
 		# account for client requested trigger press
-		with DSIStreamer.the_lock:
-			val = DSIStreamer.the_streamer.trigger_value()
-			if DSIStreamer.the_streamer.trigger_value() != DSIStreamer.TRIGGER_OFF:
-				data[-1] = 1
-				if DSIStreamer.the_streamer.trigger_value() == DSIStreamer.TRIGGER_ONCE:
-					DSIStreamer.the_streamer.trigger_release()
-			else:
-				data[-1] = 0
+		if data[-1] == 0:
+			with DSIStreamer.the_lock:
+				val = DSIStreamer.the_streamer.trigger_value()
+				if DSIStreamer.the_streamer.trigger_value() != DSIStreamer.TRIGGER_OFF:
+					data[-1] = 1
+					if DSIStreamer.the_streamer.trigger_value() == DSIStreamer.TRIGGER_ONCE:
+						DSIStreamer.the_streamer.trigger_release()
 
 		# send to out buffer for live data analysis
 		if DSIStreamer.the_streamer.live:
