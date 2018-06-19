@@ -1,4 +1,4 @@
-from psychopy import visual, core, event
+from psychopy import visual, core, event, sound
 from random import shuffle, uniform
 from datetime import datetime
 import pandas as pd
@@ -11,7 +11,10 @@ def increment():
     trialCnt += 1
 
 def connectEEG():
-    # Either send a sync pulse or activate EEG recording here
+    # Send audio sync pulse to DSI-streamer
+    sound.init(rate=44100, stereo=True, buffer=128)
+    sync_beep = sound.Sound(value='C', secs=0.2, octave=4, loops=0)
+    sync_beep.play()
     
     # Initialize the clock once connection/recording is established (tic)
     clock = core.Clock()
@@ -47,16 +50,18 @@ def runBlock(subjID, blockType, numOfTrials, taskData, win, clock):
 
     # Have loop that calls runTrial and runISI
     for trial in list(range(0, numOfTrials)):
-        runTrial(subjID, stimuli[trial], taskData, blockType, win, clock)
+        beep = sound.Sound(value='F', secs=0.2, octave=4, loops=0)
+        runTrial(subjID, stimuli[trial], taskData, blockType, win, clock, beep)
         ISIlength = uniform(4,6) # random value generated here
         runISI(ISIlength, win)
 
-def runTrial(subjID, stimulus, taskData, blockType, win, clock):
+def runTrial(subjID, stimulus, taskData, blockType, win, clock, beep):
     message.setText(stimulus)
     win.flip()
 
     # Fill in the dataframe
     trialStart = clock.getTime()
+    beep.play()
 
     # Wait for user response
     thisResp = None
@@ -105,6 +110,11 @@ if __name__ == "__main__":
     [clock, initial_timestamp] = connectEEG()
 
     # Ask for subjectID
+    print(' ')
+    print('-------------------------------------------------------------------')
+    print('---Make sure volume is up and audio trigger cable is plugged in!---')
+    print('-------------------------------------------------------------------')
+    print(' ')
     subjID = input('Enter subject ID: ')
 
     # Create the window to display
