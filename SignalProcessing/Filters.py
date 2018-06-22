@@ -31,3 +31,17 @@ def butter_bandpass_filter(data, low, high, fs, order=5):
     b, a = butter_bandpass(low, high, fs, order=order)
     data = data - np.mean(data)
     return scisig.lfilter(b, a, data)
+
+def butter_notch_filter(data, notch, fs, Q=30.0):
+    """
+    Filters passed data with a notch butter function
+    :param data: data to be bandpass filtered
+    :param notch: Frequency to remove
+    :param fs: Sampling rate (hz)
+    :param Q: Quality factor (default 30.0)
+    :return: filtered data (and modifies original data).
+    """
+    Q = Q
+    w0 = notch/(fs/2)  # Normalized Frequency
+    b, a = scisig.iirnotch(w0, Q)
+    return scisig.lfilter(b, a, data)
