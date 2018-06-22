@@ -63,21 +63,21 @@ def runBlock(subjID, blockType, numOfTrials, taskData, win, clock):
 
     # Have loop that calls runTrial and runISI
     for trial in list(range(0, numOfTrials)):
-        beep = play_sound('F')
-        runTrial(subjID, stimuli[trial], taskData, blockType, win, clock, beep, 'F')
+        runTrial(subjID, stimuli[trial], taskData, blockType, win, clock, 'F')
         ISIlength = uniform(4,6) # random value generated here
         runISI(ISIlength, win)
 
-def runTrial(subjID, stimulus, taskData, blockType, win, clock, beep, value):
+def runTrial(subjID, stimulus, taskData, blockType, win, clock, tone):
     message.setText(stimulus)
     win.flip()
 
     # Fill in the dataframe
+    beep = play_sound(tone)
     trialStart = clock.getTime()
     if beep is not None:
         beep.play()
     else:
-        play_sound(value)
+        play_sound(tone)
 
     # Wait for user response
     thisResp = None
