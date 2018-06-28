@@ -4,9 +4,7 @@ Functions related to the fourier transform.
 
 import scipy.signal as scisig
 import bisect
-import matplotlib.pyplot as plt
 import numpy as np
-import CCDLUtil.DataManagement.DataParser as CCDLDataParser
 
 
 def get_channel_fft(single_channel_signal, fs, nperseg, noverlap, filter_sig=False, filter_above=40, filter_below=1):
@@ -82,26 +80,27 @@ def get_typical_channel_band_power(freqs, density):
     return delta, theta, alpha, low_beta, high_beta
 
 
-def extract_band_features(freqs, density, inclusive_exclusive_bands, channels=None):
-    """
-    Extracts the power from a given band from the channels.
-    :param freqs: Frequencies of the density matrix
-    :param density: Shape - (epoch, spectral density, channel)
-    :param inclusive_exclusive_bands: Tuple -- band to extract the power for. example: (15, 18) extracts frequencies greater than or equal to 15 and less than
-            18 hertz
-    :param channels: List of channel indexes to extract from.  If None, all channels are used. Defaults to None.
-    :return: Features -- np array of shape (epoch, feature)
-    """
-
-    features = None
-    for band in inclusive_exclusive_bands:
-        try:
-
-            temp_freqs, temp_density = CCDLDataParser.trim_freqs(density=density, freqs=freqs, low=band[0], high=band[1])
-        except TypeError:
-            raise TypeError("'int' object has no attribute '__getitem__' -- Ensure inclusive_exclusive_bands is a list of tuples")
-        if channels is not None:
-            temp_density = temp_density[:, :, channels]
-        band_density = np.sum(temp_density, axis=1)
-        features = CCDLDataParser.stack_data_values(existing=features, value_to_stack=band_density, axis=1)
-    return features
+# TODO: Update for use without CCDLDataParser
+#def extract_band_features(freqs, density, inclusive_exclusive_bands, channels=None):
+#    """
+#    Extracts the power from a given band from the channels.
+#    :param freqs: Frequencies of the density matrix
+#    :param density: Shape - (epoch, spectral density, channel)
+#    :param inclusive_exclusive_bands: Tuple -- band to extract the power for. example: (15, 18) extracts frequencies greater than or equal to 15 and less than
+#            18 hertz
+#    :param channels: List of channel indexes to extract from.  If None, all channels are used. Defaults to None.
+#    :return: Features -- np array of shape (epoch, feature)
+#    """
+#
+#    features = None
+#    for band in inclusive_exclusive_bands:
+#        try:
+#
+#            temp_freqs, temp_density = CCDLDataParser.trim_freqs(density=density, freqs=freqs, low=band[0], high=band[1])
+#        except TypeError:
+#            raise TypeError("'int' object has no attribute '__getitem__' -- Ensure inclusive_exclusive_bands is a list of tuples")
+#        if channels is not None:
+#            temp_density = temp_density[:, :, channels]
+#        band_density = np.sum(temp_density, axis=1)
+#        features = CCDLDataParser.stack_data_values(existing=features, value_to_stack=band_density, axis=1)
+#    return features

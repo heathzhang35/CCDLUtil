@@ -82,10 +82,18 @@ class EEGInterfaceParent(object):
 		"""
 		self.stopped = True
 
+	def clear_out_buffer(self):
+		"""
+		Clears out buffer for live analysis
+		"""
+		q = self.out_buffer_queue
+		with q.mutex:
+			q.queue.clear()
+
 	@threaded(False)
 	def start_saving_data(self, save_data_file_path, header=None, timeout=15):
 		"""
-		A function to be called in a new thread whose sole purpose is to save eeg data to disk.
+		Spawns new thread and saves egg data
 		:param save_data_file_path: A string - The full file name to save the data (for example './data/subjectX.csv').
 		:param queue: The queue to read the data from.
 				Data should be placed on the queue in the form:
@@ -106,8 +114,6 @@ class EEGInterfaceParent(object):
 
 		:param header: Header for the file.  If no header is wanted, pass None.  Defaults to None.
 		:param timeout: If we don't collect any data after timeout seconds, we'll quit all processes.  If none, there won't be a timeout.
-
-		:return: Runs infinitely.  Kill by terminating the thread.
 		"""
 		f = open(save_data_file_path, 'w')
 		# Write our header with only one newline character

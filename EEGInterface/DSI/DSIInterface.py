@@ -1,5 +1,6 @@
 import sys, os, ctypes
 import threading
+from multiprocessing import Process, Queue
 from os import listdir
 import platform
 import CCDLUtil.EEGInterface.EEGInterface
@@ -8,9 +9,6 @@ import CCDLUtil.EEGInterface.DSI.API.DSI as DSI
 from CCDLUtil.Utility.Decorators import threaded
 import time, datetime
 import random
-
-
-
 
 
 
@@ -47,6 +45,9 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		:param port: serial port address for communicating with DSI hardware
 		"""
 		super(DSIStreamer, self).__init__(channels_for_live, live, save_data, subject_name, subject_tracking_number, experiment_number)
+
+		# must override thread safe queue with process safe queue
+		#self.out_buffer_queue = Queue()
 		
 		# configure port if needed
 		if not port:
@@ -67,8 +68,8 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 			self.h.SetSampleCallback(self.__sample_callback_impedances, 0)
 			self.h.StartImpedanceDriver()
 		else:
-			# TODO: set source reference
-			source_ref = None
+			# TODO: set correct source reference
+			source_ref = 'LE'
 			self.h.SetSampleCallback(self.__sample_callback_signals, 0)
 			if source_ref is not None:
 				self.h.SetDefaultReference(source_ref, True)
@@ -85,6 +86,9 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 					+ "Reference, " + self.h.GetReferenceString() + "\n\n"\
 					+ "Index, Time, LE, F4, C4, PO8, PO7, C3, F3, Trigger\n"
 
+		# used to indicate to recording thread when we'd like to stop
+		self.recording = False
+
 		self.__init()
 
 
@@ -100,8 +104,10 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         """
 		print('start recording')
 		self.start_time = time.time()
+		self.recording = True
 		self.h.StartDataAcquisition()
-		self.h.Idle(2.0)
+		while self.recording:
+			self.h.Idle(1.0)
 
 
 	def stop_recording(self):
@@ -109,9 +115,11 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		Stops data acquisition
 		"""
 		print('stop recording')
-		self.h.StopDataAcquisition()
 		self.stopped = True
-		self.h.Idle(2.0)
+		self.recording = False
+		self.h.Idle(1.0)
+		self.h.StopDataAcquisition()
+		self.h.Idle(1.0)
 
 
 	def start_saving_data(self, save_data_file_path, header=None, timeout=15):
@@ -141,8 +149,10 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 			self.__trigger = DSIStreamer.TRIGGER_OFF
 
 	def trigger_value(self):
-		with DSIStreamer.the_lock:
-			return int(self.__trigger)
+		"""
+		Returns the current value of this streamer's trigger
+		"""
+		return int(self.__trigger)
 
 
 	def __find_dsi_port(self):
@@ -175,6 +185,7 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 	@SampleCallback
 	def __sample_callback_signals(headset_ptr, packet_time, user_data):
+		#print('beginning of message callback')
 		#streamer = DSIStreamer.the_streamer
 		h = DSI.Headset(headset_ptr)
 
@@ -182,7 +193,8 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		data = None
 		try:
 			# might want to use ch.ReadBuffered()
-			data = [ch.GetSignal() for ch in h.Channels()]
+			#data = [ch.GetSignal() for ch in h.Channels()]
+			data = [ch.ReadBuffered() for ch in h.Channels()]
 			#data = [random.randint(0, 10) for _ in range(7)]
 			DSIStreamer.the_streamer.data_index += 1
 		except Exception as e:
@@ -194,12 +206,11 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 		# account for client requested trigger press
 		if data[-1] == 0:
-			with DSIStreamer.the_lock:
-				val = DSIStreamer.the_streamer.trigger_value()
-				if DSIStreamer.the_streamer.trigger_value() != DSIStreamer.TRIGGER_OFF:
-					data[-1] = 1
-					if DSIStreamer.the_streamer.trigger_value() == DSIStreamer.TRIGGER_ONCE:
-						DSIStreamer.the_streamer.trigger_release()
+			val = DSIStreamer.the_streamer.trigger_value()
+			if val != DSIStreamer.TRIGGER_OFF:
+				data[-1] = 1
+				if val == DSIStreamer.TRIGGER_ONCE:
+					DSIStreamer.the_streamer.trigger_release()
 
 		# send to out buffer for live data analysis
 		if DSIStreamer.the_streamer.live:
@@ -207,7 +218,7 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 		# save data
 		if DSIStreamer.the_streamer.save_data:
-			data_str = str(DSIStreamer.the_streamer.data_index) + ',' + str(time.time() - DSIStreamer.the_streamer.start_time) + ',' + ','.join([str(val) for val in data])
+			data_str = str(DSIStreamer.the_streamer.data_index) + (', %.3f, ' % packet_time) + ','.join([str(val) for val in data])
 			DSIStreamer.the_streamer.data_save_queue.put((None, None, data_str + '\n'))
 
 		# Set EEG INDEX parameters (not sure of purpose)
@@ -216,25 +227,27 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 
 
-
-if __name__ == '__main__':
-
+##### TESTING #####
+def main():
 	streamer = DSIStreamer(live=False)
 	streamer.start_recording()
+	time.sleep(1)
 	streamer.start_saving_data('test.csv')
 
-	time.sleep(0.1)
-	streamer.trigger()
-	time.sleep(0.1)
-	streamer.trigger_hold()
-	time.sleep(2)
-	streamer.trigger_release()
 	time.sleep(1)
-
+	streamer.trigger()
+	time.sleep(0.5)
+	streamer.trigger_hold()
+	time.sleep(1)
+	streamer.trigger_release()
+	time.sleep(10)
+			
 	#cue = 'start'
 	#while cue != 'stop':
 	#	cue = input("Enter stop to finish recording: ")
 
 	streamer.stop_recording()
-	print("ctrl-C to end")
-	# TODO: make saving thread close on it's own?
+
+
+if __name__ == '__main__':
+	main()
