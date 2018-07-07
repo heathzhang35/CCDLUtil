@@ -21,7 +21,7 @@ within this same folder.
 
 """
 
-# Todo  This script has 32 channels hard-coded.  This needs to be fixed to work with other numbers.
+# TODO: This script has 32 channels hard-coded.  This needs to be fixed to work with other numbers.
 
 # needs socket and struct library
 from socket import *
@@ -92,7 +92,7 @@ class BrainAmpSyntheticDataGenerator(object):
 
         # ##### Main Loop #### #
         while True:
-            # todo - fix this to be more dynamic and multidimensional.
+            # TODO: fix this to be more dynamic and multidimensional.
             data = [self.data_index for _ in range(len(self.channels_for_live))]
 
             # Get the time we collected the sample

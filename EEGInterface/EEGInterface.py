@@ -54,6 +54,7 @@ class EEGInterfaceParent(object):
 		# create data save queue
 		self.data_save_queue = queue.Queue() if save_data else None
 		self.stopped = False
+		self.fs = None # to be overwritten by children
 
 	@staticmethod
 	def trim_channels_with_channel_index_list(data, channel_index_list):
@@ -152,6 +153,9 @@ class EEGInterfaceParent(object):
 			f.write(data_str)
 			# Flush our buffer
 			f.flush()
+
+	def get_sampling_rate(self):
+		return self.fs
 
 
 def append_and_switch_line(string):

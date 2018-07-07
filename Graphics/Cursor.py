@@ -3,86 +3,207 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import wx
 import time
 from Utility.Decorators import threaded
+from CCDLUtil.Graphics.Subject import SubjectFrame, SubjectPanel
+
 
 """
 Graphics for cursor control task
 """
+class CursorPanel(SubjectPanel):
 
-class Cursor(wx.Frame):
+	box_ratio = 1/6
+	cursor_ratio = 1/30
+	collision_speed = 10
 
-    def __init__(self, **kwargs):
-        """
-        A wxpython cursor task
+	def __init__(self, parent, **kwargs):
+		"""
+		A wxpython cursor task
 
-        params:
-            - x_pos: window x position (defaults to 100)
-            - y_pos: window y position (defaults to 100)
-            - full_screen: if to use full screen, cannot be used together with width & height
-            - screen_width: size of screen in pixels
-            - screen_height: height of screen in pixels
-            - cursor_radius: the radius of the cursor
-        """
-        no_resize = wx.DEFAULT_FRAME_STYLE & ~ (wx.RESIZE_BORDER | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX)
-        wx.Frame.__init__(self, None, title="Cursor Task", style=no_resize)
-        # go full screen?
-        full_screen = kwargs.get("full_screen", False) 
-        self.ShowFullScreen(full_screen)
-        if full_screen and ("screen_width" in kwargs or "screen_height" in kwargs):
-            raise ValueError("Cannot use full screen and define width.height together!")
-        if not full_screen:
-            self.SetPosition((kwargs.get("x_pos", 100), kwargs.get("y_pos", 100)))
-        self.width = kwargs.get("screen_width", 500) 
-        self.height = kwargs.get("screen_height", 500) 
-        if not full_screen:
-            self.SetSize((self.width, self.height))
-        else:
-            self.width, self.height = self.GetSize()
-        self.cursor_radius = kwargs.get("cursor_radius", 30)
-        self.cursor_x = self.width // 2
-        self.cursor_y = self.height // 2
-        # background
-        self.SetBackgroundColour("gray")
-        self.Bind(wx.EVT_PAINT, self._repaint)
-        self._repaint()
+		:param parent: wx.Frame
+		params:
+			- display_index: index of display to use (for multi-display systems)
+			- cursor_radius: the radius of the cursor
+		"""
+		super().__init__(parent)
+		self.__parent = parent
 
-    def _repaint(self, event=None):
-        dc = wx.ClientDC(self)
-        dc.Clear()
-        pen = wx.Pen('white')
-        dc.SetPen(pen)
-        # Draw Horizontal Crosshair
-        dc.DrawCircle(self.cursor_x, self.cursor_y, self.cursor_radius)
+		self._x, self._y, self._radius = None, None, None
 
-    def go_left(self, delta):
-        self.cursor_x -= delta
-        self._repaint()
+		self._choices = None # array of choices
+		self._centered = False
+		self._flashing = 0
 
-    def go_right(self, delta):
-        self.cursor_x += delta
-        self._repaint()
-    
-    def go_up(self, delta):
-        self.cursor_y -= delta
-        self._repaint()
+		point_size = kwargs.get('point_size', 64)
+		self.__set_point_size(point_size)
 
-    def go_down(self, delta):
-        self.cursor_y += delta
-        self._repaint()
+		self.Bind(wx.EVT_PAINT, self._repaint)
+
+	def _update_dimensions(self):
+		x, y = self.GetPosition()
+		size = self.GetSize()
+		w, h = size.GetWidth(), size.GetHeight()
+		if not self._centered:
+			self._x, self._y, = x + w // 2, y + h // 2
+			self._centered = True
+		self._radius = int(w * self.cursor_ratio)
+		return x, y, w, h
+
+	def __set_point_size(self, point_size):
+		font = wx.SystemSettings.GetFont(wx.TELETYPE)
+		font.SetPointSize(point_size)
+		self.SetFont(font)
+
+	def _repaint(self, event=None):
+		x, y, w, h = self._update_dimensions()
+		self._radius = int(w * self.cursor_ratio)
+
+		dc = wx.ClientDC(self)
+		dc.Clear()
+
+		if self._choices is not None:
+			pen = wx.Pen('green')
+			dc.SetPen(pen)
+			brush = wx.Brush('green')
+			dc.SetBrush(brush)
+
+			# draw choice boxes
+			box_w = w * self.box_ratio
+			dc.DrawRectangle(x, y, box_w, h)
+			dc.DrawRectangle(x + w - box_w, y, box_w, h) 
+
+			pen = wx.Pen('black')
+			dc.SetPen(pen)
+
+			# draw text
+			this_w, this_h = dc.GetTextExtent(self._choices[0])
+			mp = (x + box_w // 2, y + h // 2) # midpoint
+			this_x = mp[0] - this_w // 2
+			this_y = mp[1] - this_h // 2
+			dc.DrawText(self._choices[0], this_x, this_y)
+
+			this_w, this_h = dc.GetTextExtent(self._choices[1])
+			mp = (x + w - box_w // 2, y + h // 2) # midpoint
+			this_x = mp[0] - this_w // 2
+			this_y = mp[1] - this_h // 2
+			dc.DrawText(self._choices[1], this_x, this_y)
+
+		if self._flashing == 0:
+			pen = wx.Pen('white')
+			dc.SetPen(pen)
+			brush = wx.Brush('white')
+			dc.SetBrush(brush)
+			# draw cursor
+			dc.DrawCircle(self._x, self._y, self._radius)
+		elif self._flashing % 2 == 0:
+			brush = wx.Brush('red')
+			dc.SetBrush(brush)
+			# draw cursor
+			dc.DrawCircle(self._x, self._y, self._radius)
+		if self._flashing > 0:
+			self._flashing += 1
+
+
+	def set_choices(self, choices):
+		assert isinstance(choices, type([])) and len(choices) == 2, "must provide array of choices"
+		self._choices = choices
+
+	def reset(self):
+		size = self.GetSize()
+		self._w = size.GetWidth()
+		self._x, self._y = self._w // 2, size.GetHeight() // 2
+
+	def move_x(self, delta):
+		self._x += delta
+		self._repaint()
+
+	def move_y(self, delta):
+		self._y += delta
+		self._repaint()
+
+	def collide(self, duration=1.5):
+		x, y, w, h = self._update_dimensions()
+		if self._x < x + w // 2:
+			# collide left
+			while self._x > x + self._radius * 2:
+				self._x -= self.collision_speed
+				self._repaint()
+		else:
+			# collide right
+			while self._x < x + w - self._radius * 2:
+				self._x += self.collision_speed
+				self._repaint()
+		self._flashing = 1 # start flashing
+		t = time.time()
+		while time.time() - t < duration:
+			self._repaint()
+			time.sleep(0.2)
+		self._flashing = 0 # stop flashing
+		
+
+	def reached_boundary(self):
+		"""
+		Returns 0 if cursor boundary has not been reached, -1 if left boundary has
+		been reached, and +1 if right boundary has been reached
+		"""
+		size = self.GetSize()
+		w = size.GetWidth()
+		left_cursor_edge = self._x - self._radius // 2
+		right_cursor_edge = self._x + self._radius // 2
+		left_boundary = self._radius
+		right_boundary = w - self._radius
+		if left_cursor_edge <= left_boundary:
+			return -1
+		if right_cursor_edge >= right_boundary:
+			return 1
+		# no boundary reached
+		return 0
+
+	def closest_to(self):
+		"""
+		Returns -1 if cursor is closer to left,
+		and +1 if cursor is closer to right
+		"""
+		mid = self._w // 2
+		if self._x <= mid:
+			return -1
+		if self._x > mid:
+			return 1
+
 
 ### TESTING ###
 @threaded(True)
-def ani(frame):
-    for i in range(10):
-        time.sleep(2)
-        if i % 2 == 0:
-            frame.go_left(30)
-        else:
-            frame.go_right(30)
+def ani(panel):
+	for i in range(10):
+		time.sleep(2)
+		if i % 2 == 0:
+			panel.go_left(30)
+		else:
+			panel.go_right(30)
 
+def set_frame_display(frame, display_index):
+	display = wx.Display(display_index)
+	x, y, w, h = display.GetGeometry()
+	#frame.SetPosition((x, y))
+	frame.SetSize(x, y, w, h)
+	frame.ShowFullScreen(True, frame.FULLSCREEN_NOSTATUSBAR)
+
+def multi_display_test():
+	app = wx.App(False)
+	count = wx.Display.GetCount()
+	for index in range(count):
+		frame = wx.Frame(None, -1, 'Display %d of %d' % (index + 1, count))
+		set_frame_display(frame, index)
+		frame.Show()
+	app.MainLoop()
+
+def cursor_test():
+	app = wx.App()
+	frame = SubjectFrame(display_index=1)
+	panel = CursorPanel(frame)
+	frame.Show()
+	ani(panel)
+	app.MainLoop()
 
 if __name__ == '__main__':
-    app = wx.App(False)
-    ch = Cursor(full_screen=True, cursor_radius=50)
-    ani(ch)
-    ch.Show()
-    app.MainLoop()
+	#multi_display_test()
+	cursor_test()
