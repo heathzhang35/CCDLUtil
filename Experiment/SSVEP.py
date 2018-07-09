@@ -1,13 +1,12 @@
 import sys, os
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import random
 import time
 import numpy as np
+
 import SignalProcessing.Fourier as Fourier
 import Utility.Constants as Constants
-import EEGInterface.BrainAmp.BrainAmpInterface as BrainAmp
-import EEGInterface.OpenBCI.OpenBCIInterface as OpenBCI
-import EEGInterface.DSI.DSIInterface as DSI
+from EEGInterface.DSI.DSIInterface import DSIStreamer
 from EEGInterface.SyntheticInterface import SyntheticStreamer
 from ArduinoInterface.Arduino2LightInterface import Arduino2LightInterface as Arduino
 from SignalProcessing.Filters import butter_bandpass_filter
@@ -26,9 +25,7 @@ ROTATE = 'rotate'
 DONT_ROTATE = 'dont_rotate'
 EEG_COLLECT_TIME_SECONDS = 20
 WINDOW_SIZE_SECONDS = 2
-EEG = Constants.EEGSystemNames.DSI_7
-#EEG = 'TEST'
-ARDUINO = True # usually True for use with Arduino lights; False for testing
+ARDUINO = False # usually True for use with Arduino lights; False for testing
 log = Log('DSI_test.log')
 
 
@@ -275,17 +272,23 @@ def run_experiment(eeg, app, prompt_list):
 
 
 def main():
-	# some questions
+	# questions for our subject
 	prompt_list = build_prompt_list()
 
-	# SyntheticStreamer is a fake streamer
-	#eeg = SyntheticStreamer(live=True, save_data=False)
-	eeg = DSIStreamer(live=True, save_data=True)
+	# SyntheticStreamer is a fake streamer for testing purposes
+	eeg = SyntheticStreamer(live=True, save_data=False)
+
+	# DSIStreamer will interact with the DSI-7
+	#eeg = DSIStreamer(live=True, save_data=True)
+
 	eeg.start_recording()
-	eeg.start_saving_data('ssvep_dsi_test.csv')
+
+	# Uncomment this line to start saving data for post analysis
+	#eeg.start_saving_data('ssvep_dsi_test.csv')
 
 	# change display_index for multi-display systems
-	gui = SSVEPGUI(display_index=1)
+	gui = SSVEPGUI(display_index=0)
+
 	run_experiment(eeg, gui, prompt_list)
 	gui.MainLoop()
 
