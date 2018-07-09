@@ -26,9 +26,9 @@ ROTATE = 'rotate'
 DONT_ROTATE = 'dont_rotate'
 EEG_COLLECT_TIME_SECONDS = 20
 WINDOW_SIZE_SECONDS = 2
-#EEG = Constants.EEGSystemNames.DSI_7
-EEG = 'TEST'
-ARDUINO = False # usually True for use with Arduino lights; False for testing
+EEG = Constants.EEGSystemNames.DSI_7
+#EEG = 'TEST'
+ARDUINO = True # usually True for use with Arduino lights; False for testing
 log = Log('DSI_test.log')
 
 
@@ -278,9 +278,11 @@ def main():
 	# some questions
 	prompt_list = build_prompt_list()
 
-	eeg = SyntheticStreamer(live=True, save_data=False)
+	# SyntheticStreamer is a fake streamer
+	#eeg = SyntheticStreamer(live=True, save_data=False)
+	eeg = DSIStreamer(live=True, save_data=True)
 	eeg.start_recording()
-	#eeg.start_saving_data('ssvep_test.csv')
+	eeg.start_saving_data('ssvep_dsi_test.csv')
 
 	# change display_index for multi-display systems
 	gui = SSVEPGUI(display_index=1)
