@@ -157,6 +157,31 @@ class EEGInterfaceParent(object):
 	def get_sampling_rate(self):
 		return self.fs
 
+	def trigger(self):
+		"""
+		An instantaneous trigger pull 
+		"""
+		pass
+
+	def trigger_hold(self):
+		"""
+		Press and hold trigger
+		"""
+		pass
+
+	def trigger_release(self):
+		"""
+		Release held trigger
+		"""
+		pass
+
+	def trigger_value(self):
+		"""
+		Returns the current value of this streamer's trigger
+		"""
+		pass
+
+
 
 def append_and_switch_line(string):
 	"""

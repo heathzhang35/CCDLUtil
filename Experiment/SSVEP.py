@@ -82,15 +82,15 @@ class SSVEPGUI(wx.App):
 class SSVEPSubjectFrame(SubjectFrame):
 	def __init__(self, display_index=0):
 		super().__init__(display_index)
-		self.cursor = CursorPanel(self)
 		self.ch = CHPanel(self)
-		self.ch.Hide()
+		self.cursor = CursorPanel(self)
+		self.cursor.Hide()
 		self.prompt = PromptPanel(self)
 		self.prompt.Hide()
 
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
-		self.sizer.Add(self.cursor, 1, wx.EXPAND)
 		self.sizer.Add(self.ch, 1, wx.EXPAND)
+		self.sizer.Add(self.cursor, 1, wx.EXPAND)
 		self.sizer.Add(self.prompt, 1, wx.EXPAND)
 		self.SetSizer(self.sizer)
 
@@ -141,15 +141,16 @@ class SSVEPSubjectFrame(SubjectFrame):
 
 
 
-def trial_logic(eeg, gui, low_freq, high_freq, prompt, sleep_time_if_not_ran=2):
+def trial_logic(eeg, gui, left_freq, right_freq, prompt, ard=None, sleep_time_if_not_ran=2):
 	"""
 	Run a full trial of SSVEP experiment.
 
 	:param eeg: Used EEG system (or None)
 	:param gui: a wxPython application
-	:param low_freq: the low frequency density we need
-	:param high_freq: the high frequency density we need
+	:param left_freq: the low frequency density we need
+	:param right_freq: the high frequency density we need
 	:param prompt: the prompt sentences to show on SSVEP screen
+	:param ard: for communication with arduino
 	:param sleep_time_if_not_ran: time to sleep if eeg == None
 	:return: the answer, stop early or late
 	"""
@@ -164,28 +165,26 @@ def trial_logic(eeg, gui, low_freq, high_freq, prompt, sleep_time_if_not_ran=2):
 
 	start_time = time.time()
 
-	# shape of sample is : (sample, channel)
-	packet = np.asarray(out_buffer_queue.get())
-	samples_per_packet = packet.shape[0]
-
 	# get constants for full trial
 	single_trial_duration_samples = EEG_COLLECT_TIME_SECONDS * fs
-	single_trial_duration_packets = int(single_trial_duration_samples / samples_per_packet)
 
 	# get constants for single window
-	window_size_samples = WINDOW_SIZE_SECONDS * fs
-	window_size_packets = window_size_samples / samples_per_packet
+	window_size_samples = int(WINDOW_SIZE_SECONDS * fs)
 
 	# b is the np array to hold all data in single trial
 	b = np.zeros(shape=(single_trial_duration_samples,))
-	packet_index = 0
+	window = np.zeros(shape=(window_size_samples, eeg.NUM_CHANNELS))
+	sample_index = 0
 
+	if ard is not None:
+		ard.turn_both_on()
 	gui.reset_cursor()
 	gui.show_cursor()
 
+	eeg.trigger_hold()
 	eeg.clear_out_buffer()
 
-	while packet_index < single_trial_duration_packets:
+	while sample_index < single_trial_duration_samples:
 		# insert the visualizer here
 		packet = None
 		try:
@@ -194,24 +193,23 @@ def trial_logic(eeg, gui, low_freq, high_freq, prompt, sleep_time_if_not_ran=2):
 			print(e)
 			exit(1)
 			
-		samples = np.squeeze(packet)	  # Gives us a (10,) array
-		sample_index = packet_index * samples_per_packet
-		b[sample_index: sample_index + samples_per_packet] = samples
-		packet_index += 1
+		window[sample_index % window_size_samples, :] = packet[:]
 
 		# if we have enough samples, perform FFT on a single window
-		if packet_index != 0 and packet_index % window_size_packets == 0:
-			# print "packet index: ", packet_index, ", do FFT"
-			window = b[packet_index * samples_per_packet - window_size_samples:packet_index * samples_per_packet]
+		if sample_index != 0 and sample_index % window_size_samples == 0:
+
 			# filter using 5 - 30 Hz
 			window = butter_bandpass_filter(window, 5, 30, 250, order=2)
-			# perform FFT
-			freq, density = Fourier.get_fft_all_channels(data=np.expand_dims(np.expand_dims(window, axis=0), axis=2),
-														 fs=fs, noverlap=fs // 2, nperseg=fs)
 
-			# compare densities of 17Hz and 15Hz frequencies
+			# perform FFT
+			data = np.expand_dims(window, axis=0)
+			noverlap = (fs //2)
+			nperseg = fs
+			freq, density = Fourier.get_fft_all_channels(data=data, fs=fs, nperseg=fs)
+
+			# compare densities of left and right frequencies
 			# and move cursor left or right accordingly
-			if density[0][high_freq][0] <= density[0][low_freq][0]:
+			if density[0][right_freq][0] <= density[0][left_freq][0]:
 				gui.move_cursor_left()
 			else:
 				gui.move_cursor_right()
@@ -219,22 +217,30 @@ def trial_logic(eeg, gui, low_freq, high_freq, prompt, sleep_time_if_not_ran=2):
 			rb = gui.reached_boundary()
 			# if we reach left boundary
 			if rb == -1:
+				eeg.trigger_release()
 				log.info("end: " + str(time.time()))
 				log.info("ROTATE")
 				gui.collide()
+				if ard is not None:
+					ard.turn_both_off()
 				return ROTATE, start_time, time.time()
 			# right boundary
 			if rb == 1:
+				eeg.trigger_release()
 				log.info("end: " + str(time.time()))
 				log.info("NO ROTATE")
 				gui.collide()
+				if ard is not None:
+					ard.turn_both_off()
 				return DONT_ROTATE, start_time, time.time()
 
+		sample_index += 1
 
 	## if time runs out, find which side cursor is closest to
 	ct = gui.closest_to()
 	gui.collide()
-	# closest to left
+	if ard is not None:
+		ard.turn_both_off()
 	gui.show_crosshair()
 	log.info("end: " + str(time.time()))
 	if ct == -1:
@@ -257,18 +263,32 @@ def run_experiment(eeg, app, prompt_list):
 	app.set_choices(['YES', 'NO'])
 
 	# create arduino
-	if ARDUINO: ard = Arduino(com_port=15)
+	ard = None
+	if ARDUINO:
+		ard = Arduino()
+		ard.turn_both_off()
+		time.sleep(0.66)
+		ard.turn_left_on()
+		time.sleep(0.66)
+		ard.turn_left_off()
+		ard.turn_right_on()
+		time.sleep(0.66)
+		ard.turn_both_off()
+
+	eeg.start_recording()
+
+	# Uncomment this line to start saving data for post analysis
+	if not isinstance(eeg, SyntheticStreamer):
+		eeg.start_saving_data('ssvep_dsi_test.csv')
 
 	# start
 	i = 1
 	for prompt in prompt_list:
-		if ARDUINO:
-			ard.turn_both_on()
-		trial_logic(eeg, app, high_freq=17, low_freq=15, prompt=prompt)
-		if ARDUINO:
-			ard.turn_both_off()
+		trial_logic(eeg, app, ard=ard, left_freq=14, right_freq=13, prompt=prompt)
 		time.sleep(5)
 		i += 1
+
+	eeg.stop_recording()
 
 
 def main():
@@ -280,11 +300,6 @@ def main():
 
 	# DSIStreamer will interact with the DSI-7
 	#eeg = DSIStreamer(live=True, save_data=True)
-
-	eeg.start_recording()
-
-	# Uncomment this line to start saving data for post analysis
-	#eeg.start_saving_data('ssvep_dsi_test.csv')
 
 	# change display_index for multi-display systems
 	gui = SSVEPGUI(display_index=0)

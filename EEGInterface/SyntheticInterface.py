@@ -6,9 +6,12 @@ from CCDLUtil.Utility.Decorators import threaded
 
 class SyntheticStreamer(EEGInterfaceParent):
 
+	NUM_CHANNELS = 8
+
 	def __init__(self, num_channels=8, fs=300, live=True, save_data=False):
 		super(SyntheticStreamer, self).__init__(live=live, save_data=save_data)
 		self.num_channels = num_channels
+		self.NUM_CHANNELS = num_channels
 		self.fs = fs
 		self.recording = False
 

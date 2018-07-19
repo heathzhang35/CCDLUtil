@@ -22,6 +22,8 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 	TRIGGER_ONCE = 1
 	TRIGGER_HOLD = 2
 
+	NUM_CHANNELS = 8
+
 	the_streamer = None
 	the_lock = threading.RLock()
 
@@ -45,6 +47,9 @@ class DSIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 		:param port: serial port address for communicating with DSI hardware
 		"""
 		super(DSIStreamer, self).__init__(channels_for_live, live, save_data, subject_name, subject_tracking_number, experiment_number)
+
+		# sampling rate of DSI headset
+		self.fs = 300
 
 		# must override thread safe queue with process safe queue
 		#self.out_buffer_queue = Queue()
