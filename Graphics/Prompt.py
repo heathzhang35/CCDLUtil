@@ -16,8 +16,6 @@ class PromptPanel(SubjectPanel):
 		A wxpython prompting task
 
 		:param parent: wx.Frame
-		params:
-			- display_index: index of display to use (for multi-display systems)
 		"""
 		super().__init__(parent)
 		# array of text to display; each element represents a new line

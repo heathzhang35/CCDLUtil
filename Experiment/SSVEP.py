@@ -24,8 +24,8 @@ from Graphics.Subject import SubjectFrame
 ROTATE = 'rotate'
 DONT_ROTATE = 'dont_rotate'
 EEG_COLLECT_TIME_SECONDS = 20
-WINDOW_SIZE_SECONDS = 2
-ARDUINO = False # usually True for use with Arduino lights; False for testing
+WINDOW_SIZE_SECONDS = 0.5
+ARDUINO = True # usually True for use with Arduino lights; False for testing
 log = Log('DSI_test.log')
 
 
@@ -203,9 +203,7 @@ def trial_logic(eeg, gui, left_freq, right_freq, prompt, ard=None, sleep_time_if
 
 			# perform FFT
 			data = np.expand_dims(window, axis=0)
-			noverlap = (fs //2)
-			nperseg = fs
-			freq, density = Fourier.get_fft_all_channels(data=data, fs=fs, nperseg=fs)
+			freq, density = Fourier.get_fft_all_channels(data=data, fs=fs, nperseg=(int(fs * WINDOW_SIZE_SECONDS / 2)))
 
 			# compare densities of left and right frequencies
 			# and move cursor left or right accordingly
@@ -279,7 +277,7 @@ def run_experiment(eeg, app, prompt_list):
 
 	# Uncomment this line to start saving data for post analysis
 	if not isinstance(eeg, SyntheticStreamer):
-		eeg.start_saving_data('ssvep_dsi_test.csv')
+		eeg.start_saving_data('SSVEP_JamesWenlock.csv')
 
 	# start
 	i = 1
@@ -296,10 +294,10 @@ def main():
 	prompt_list = build_prompt_list()
 
 	# SyntheticStreamer is a fake streamer for testing purposes
-	eeg = SyntheticStreamer(live=True, save_data=False)
+	#eeg = SyntheticStreamer(live=True, save_data=False)
 
 	# DSIStreamer will interact with the DSI-7
-	#eeg = DSIStreamer(live=True, save_data=True)
+	eeg = DSIStreamer(live=True, save_data=True)
 
 	# change display_index for multi-display systems
 	gui = SSVEPGUI(display_index=0)
