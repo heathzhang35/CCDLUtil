@@ -3,7 +3,8 @@
 # CCDLUtil
 
 ## Currently:
-This is up-to-date with a private CCDLUtil repo the REU students work on this summer.
+This is up-to-date with a private CCDLUtil repo the REU students work on this summer. Please also note that `python3-updates` is default branch now, as the `master` branch is kept for 
+old legacy code like BrainNet
 
 ## Instructions for use
 
