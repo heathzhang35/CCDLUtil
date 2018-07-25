@@ -1,16 +1,9 @@
-[![Build Status](https://travis-ci.com/lpjiang97/CCDLUtil.svg?token=mfNtTeyrZWrKtxdswJLn&branch=master)](https://travis-ci.com/lpjiang97/CCDLUtil) [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+[![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
 # CCDLUtil
 
-## Introduction
-
-This is the forked repo of [CCDLUtil](<https://github.com/UWCCDL/CCDLUtil>). Our development goal is:
-* Python 3.5 (or newer) adaption
-* New EEG headset API
-
-Collaborator:
-* Preston Jiang
-* Nile Wilson
+## Currently:
+This is up-to-date with a private CCDLUtil repo the REU students work on this summer.
 
 ## Instructions for use
 
